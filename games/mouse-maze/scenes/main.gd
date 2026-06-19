@@ -1,9 +1,5 @@
 extends Node2D
-## Mouse Maze — minimal but real gameplay.
-##
-## A grid maze drawn with simple shapes (final 2.5D garden art comes later).
-## Move the mouse with arrow keys / WASD to reach the cheese. On success the
-## game reports progress to the launcher via DabbleSDK and returns home.
+## Mouse Maze — cozy garden maze. Orchestrates visuals, input, and DabbleSDK.
 
 const TILE := 64
 
@@ -28,14 +24,19 @@ var _won := false
 var _moves := 0
 var _start_ms := 0
 
-@onready var _col_grass := Color.html("6ab04c")
-@onready var _col_wall := Color.html("227a3f")
-@onready var _col_floor := Color.html("8fd06b")
-@onready var _col_mouse := Color.html("9b8579")
-@onready var _col_cheese := Color.html("f6c945")
+@onready var _maze_renderer: Node2D = $MazeRoot/MazeRenderer
+@onready var _mouse_char: Node2D = $MazeRoot/Characters/Mouse
+@onready var _cheese_goal: Node2D = $MazeRoot/Characters/Cheese
+@onready var _camera: Camera2D = $Camera2D
+@onready var _win_ui: CanvasLayer = $WinUI
+@onready var _audio: Node = $GameAudio
 
 
 func _ready() -> void:
+	call_deferred("_boot")
+
+
+func _boot() -> void:
 	_rows = _grid.size()
 	_cols = _grid[0].length()
 	for y in _rows:
@@ -46,15 +47,28 @@ func _ready() -> void:
 					_mouse = Vector2i(x, y)
 				"C":
 					_cheese = Vector2i(x, y)
+
 	var maze_size := Vector2(_cols * TILE, _rows * TILE)
-	_origin = ((get_viewport_rect().size - maze_size) * 0.5).round()
+	var view := get_viewport_rect().size
+	_origin = ((view - maze_size) * 0.5).round()
+	$MazeRoot.position = Vector2.ZERO
+
+	_maze_renderer.build(_grid, _origin)
+	_mouse_char.snap_to_grid(_mouse, _origin)
+	_cheese_goal.set_grid_pos(_cheese, _origin)
+
+	_camera.position = _origin + maze_size * 0.5
+	_camera.zoom = Vector2(1.12, 1.12)
+	_camera.position_smoothing_enabled = true
+	_camera.position_smoothing_speed = 5.0
+
+	if _audio != null and _audio.has_method("configure_from_sdk"):
+		_audio.configure_from_sdk()
 	_start_ms = Time.get_ticks_msec()
 
 	DabbleSDK.emit_visit("play")
 	DabbleSDK.emit_game_event("mouse-maze.started", {})
-	queue_redraw()
 
-	# Headless / automated runs win immediately so the contract is verifiable.
 	if DabbleSDK.wants_autowin():
 		await get_tree().create_timer(0.2).timeout
 		_win()
@@ -101,7 +115,9 @@ func _try_move(dir: Vector2i) -> void:
 		return
 	_mouse = Vector2i(nx, ny)
 	_moves += 1
-	queue_redraw()
+	_mouse_char.move_to_grid(_mouse, _origin, dir)
+	_audio.play_move()
+	_camera.position = _mouse_char.position
 	if _mouse == _cheese:
 		_win()
 
@@ -110,7 +126,22 @@ func _win() -> void:
 	if _won:
 		return
 	_won = true
-	queue_redraw()
+
+	_mouse_char.play_win()
+	_cheese_goal.play_collected()
+	_audio.play_sparkle()
+	_audio.play_win()
+
+	var messages := [
+		"You found the cheese!",
+		"Great job!",
+		"Maze complete!",
+	]
+	_win_ui.show_celebration(messages[randi() % messages.size()])
+
+	# Gentle camera punch-in for celebration.
+	var tween := create_tween()
+	tween.tween_property(_camera, "zoom", Vector2(1.22, 1.22), 0.35).set_trans(Tween.TRANS_BACK)
 
 	var elapsed := Time.get_ticks_msec() - _start_ms
 	var plays := 1
@@ -124,39 +155,5 @@ func _win() -> void:
 	var state := {"plays": plays, "moves": _moves, "lastMs": elapsed}
 	DabbleSDK.save_module_state(state)
 
-	await get_tree().create_timer(1.2).timeout
+	await get_tree().create_timer(1.8).timeout
 	DabbleSDK.finish({"completions": {"games": 1}, "moduleState": state})
-
-
-func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), _col_grass)
-	for y in _rows:
-		var line := _grid[y]
-		for x in line.length():
-			var pos := _origin + Vector2(x * TILE, y * TILE)
-			var rect := Rect2(pos, Vector2(TILE, TILE))
-			if _cell(x, y) == "#":
-				draw_rect(rect, _col_wall)
-			else:
-				draw_rect(rect.grow(-2.0), _col_floor)
-
-	var half := Vector2(TILE, TILE) * 0.5
-	var cpos := _origin + Vector2(_cheese.x * TILE, _cheese.y * TILE) + half
-	draw_circle(cpos, TILE * 0.28, _col_cheese)
-
-	var mpos := _origin + Vector2(_mouse.x * TILE, _mouse.y * TILE) + half
-	draw_circle(mpos + Vector2(-11, -15), 7.0, _col_mouse)
-	draw_circle(mpos + Vector2(11, -15), 7.0, _col_mouse)
-	draw_circle(mpos, TILE * 0.3, _col_mouse)
-
-	if _won:
-		var font := ThemeDB.fallback_font
-		draw_string(
-			font,
-			Vector2(_origin.x, _origin.y - 14.0),
-			"You found the cheese!",
-			HORIZONTAL_ALIGNMENT_LEFT,
-			-1,
-			28,
-			Color.WHITE
-		)
