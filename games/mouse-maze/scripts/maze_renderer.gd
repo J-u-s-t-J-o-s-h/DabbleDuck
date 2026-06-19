@@ -1,23 +1,27 @@
 extends Node2D
-## Builds textured garden maze tiles, hedge walls, and scattered decorations.
+## Garden maze tiles from Kenney Tiny Dungeon atlas (CC0).
 
 const TILE := 64
+const _SpriteUtils := preload("res://scripts/sprite_utils.gd")
 
-var _floor_tex: Texture2D
-var _wall_tex: Texture2D
-var _flower_tex: Texture2D
-var _mushroom_tex: Texture2D
+var _dungeon_tex: Texture2D
+var _floor_atlas: AtlasTexture
+var _wall_atlas: AtlasTexture
+var _deco_flower: Texture2D
+var _deco_mushroom: Texture2D
 
 
 func _ensure_textures() -> void:
-	if _floor_tex == null:
-		_floor_tex = load("res://assets/environment/grass_floor.png")
-	if _wall_tex == null:
-		_wall_tex = load("res://assets/environment/hedge_wall.png")
-	if _flower_tex == null:
-		_flower_tex = load("res://assets/environment/deco_flower.png")
-	if _mushroom_tex == null:
-		_mushroom_tex = load("res://assets/environment/deco_mushroom.png")
+	if _dungeon_tex == null:
+		_dungeon_tex = load("res://assets/environment/dungeon_tilemap.png")
+	if _floor_atlas == null and _dungeon_tex != null:
+		# Tan path floor + stone wall from Kenney Tiny Dungeon sheet.
+		_floor_atlas = _SpriteUtils.atlas_region(_dungeon_tex, 1, 1)
+		_wall_atlas = _SpriteUtils.atlas_region(_dungeon_tex, 0, 2)
+	if _deco_flower == null:
+		_deco_flower = load("res://assets/environment/deco_flower.png")
+	if _deco_mushroom == null:
+		_deco_mushroom = load("res://assets/environment/deco_mushroom.png")
 
 
 func build(grid: PackedStringArray, origin: Vector2) -> void:
@@ -38,70 +42,47 @@ func build(grid: PackedStringArray, origin: Vector2) -> void:
 				_add_wall(center)
 			elif cell == ".":
 				_add_floor(center)
-				if randf() < 0.14:
-					_add_deco(center)
+
+
+func _sprite_from_atlas(atlas: AtlasTexture, center: Vector2, z: int) -> void:
+	if atlas == null:
+		return
+	var s := Sprite2D.new()
+	s.texture = atlas
+	s.centered = true
+	s.position = center
+	var scale := TILE / float(_SpriteUtils.KENNEY_TILE)
+	s.scale = Vector2(scale, scale)
+	s.z_index = z
+	add_child(s)
 
 
 func _add_floor(center: Vector2) -> void:
-	if _floor_tex != null:
-		var s := Sprite2D.new()
-		s.texture = _floor_tex
-		s.centered = true
-		s.position = center
-		s.scale = Vector2(
-			TILE / float(_floor_tex.get_width()),
-			TILE / float(_floor_tex.get_height())
-		)
-		s.z_index = 0
-		add_child(s)
-	else:
-		var rect := ColorRect.new()
-		rect.size = Vector2(TILE - 2, TILE - 2)
-		rect.position = center - rect.size * 0.5
-		rect.color = Color.html("8fd06b")
-		add_child(rect)
+	_sprite_from_atlas(_floor_atlas, center, 0)
 
 
 func _add_wall(center: Vector2) -> void:
 	var shadow := Sprite2D.new()
-	shadow.texture = _ellipse_texture(48, 24)
+	shadow.texture = _ellipse_texture(40, 20)
 	shadow.centered = true
-	shadow.position = center + Vector2(4, 10)
-	shadow.modulate = Color(0.1, 0.15, 0.1, 0.35)
+	shadow.position = center + Vector2(3, 8)
+	shadow.modulate = Color(0.08, 0.12, 0.08, 0.35)
 	shadow.z_index = 1
 	add_child(shadow)
-
-	if _wall_tex != null:
-		var s := Sprite2D.new()
-		s.texture = _wall_tex
-		s.centered = true
-		s.position = center
-		s.scale = Vector2(
-			TILE / float(_wall_tex.get_width()),
-			TILE / float(_wall_tex.get_height())
-		)
-		s.z_index = 2
-		add_child(s)
-	else:
-		var rect := ColorRect.new()
-		rect.size = Vector2(TILE, TILE)
-		rect.position = center - rect.size * 0.5
-		rect.color = Color.html("227a3f")
-		add_child(rect)
+	_sprite_from_atlas(_wall_atlas, center, 2)
 
 
 func _add_deco(center: Vector2) -> void:
-	var tex: Texture2D = _flower_tex if randf() < 0.55 else _mushroom_tex
+	var tex: Texture2D = _deco_flower if randf() < 0.5 else _deco_mushroom
 	if tex == null:
 		return
 	var s := Sprite2D.new()
 	s.texture = tex
 	s.centered = true
-	s.position = center + Vector2(randf_range(-6, 6), randf_range(-6, 6))
-	var side := TILE * 0.55 / float(tex.get_width())
+	s.position = center + Vector2(randf_range(-4, 4), randf_range(-4, 4))
+	var side: float = _SpriteUtils.scale_to_tile(tex, 0.35)
 	s.scale = Vector2(side, side)
 	s.z_index = 3
-	s.modulate = Color(1, 1, 1, 0.92)
 	add_child(s)
 
 

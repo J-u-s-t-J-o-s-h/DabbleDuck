@@ -1,32 +1,35 @@
 extends Node2D
-## Glowing, bobbing cheese with sparkle particles.
+## Kenney food-pack cheese wedge with glow and sparkles.
 
 const TILE := 64
+const _SpriteUtils := preload("res://scripts/sprite_utils.gd")
 
 var _sprite: Sprite2D
 var _glow: PointLight2D
 var _sparkles: GPUParticles2D
 var _won := false
-var _base_scale := 0.22
+var _base_scale := 1.0
 
 
 func _ready() -> void:
 	_glow = PointLight2D.new()
-	_glow.energy = 0.55
+	_glow.energy = 0.45
 	_glow.texture = _soft_light_texture()
-	_glow.texture_scale = 2.2
+	_glow.texture_scale = 1.6
 	_glow.color = Color(1.0, 0.92, 0.55, 1.0)
 	_glow.shadow_enabled = false
 	add_child(_glow)
 
 	_sprite = Sprite2D.new()
-	_sprite.texture = load("res://assets/characters/cheese.png")
+	var tex := load("res://assets/characters/cheese.png") as Texture2D
+	_sprite.texture = tex
+	_base_scale = _SpriteUtils.scale_to_tile(tex, 0.42)
 	_sprite.scale = Vector2(_base_scale, _base_scale)
 	_sprite.z_index = 4
 	add_child(_sprite)
 
 	_sparkles = GPUParticles2D.new()
-	_sparkles.amount = 24
+	_sparkles.amount = 16
 	_sparkles.lifetime = 1.2
 	_sparkles.preprocess = 0.5
 	_sparkles.explosiveness = 0.0
@@ -34,11 +37,11 @@ func _ready() -> void:
 	var mat := ParticleProcessMaterial.new()
 	mat.direction = Vector3(0, -1, 0)
 	mat.spread = 180.0
-	mat.initial_velocity_min = 8.0
-	mat.initial_velocity_max = 22.0
-	mat.gravity = Vector3(0, -15, 0)
-	mat.scale_min = 0.15
-	mat.scale_max = 0.35
+	mat.initial_velocity_min = 6.0
+	mat.initial_velocity_max = 16.0
+	mat.gravity = Vector3(0, -12, 0)
+	mat.scale_min = 0.12
+	mat.scale_max = 0.28
 	mat.color = Color(1.0, 0.95, 0.6, 0.9)
 	_sparkles.process_material = mat
 	_sparkles.z_index = 3
@@ -51,25 +54,25 @@ func set_grid_pos(grid: Vector2i, origin: Vector2) -> void:
 
 func play_collected() -> void:
 	_won = true
-	_glow.energy = 1.2
+	_glow.energy = 0.9
 	if _sparkles:
-		_sparkles.amount = 48
+		_sparkles.amount = 36
 		_sparkles.explosiveness = 0.85
 
 
 func _process(_delta: float) -> void:
 	var t := Time.get_ticks_msec() * 0.003
 	if _won:
-		_sprite.rotation = sin(t * 8.0) * 0.2
-		_sprite.scale = Vector2(_base_scale * 1.15, _base_scale * 1.15)
+		_sprite.rotation = sin(t * 8.0) * 0.15
+		_sprite.scale = Vector2(_base_scale * 1.1, _base_scale * 1.1)
 	else:
-		_sprite.position.y = sin(t * 2.2) * 6.0
-		_sprite.rotation = sin(t * 1.5) * 0.05
-		_glow.energy = 0.45 + sin(t * 2.0) * 0.15
+		_sprite.position.y = sin(t * 2.2) * 3.0
+		_sprite.rotation = sin(t * 1.5) * 0.04
+		_glow.energy = 0.35 + sin(t * 2.0) * 0.12
 
 
 func _soft_light_texture() -> Texture2D:
-	var size := 64
+	var size := 48
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var center := Vector2(size * 0.5, size * 0.5)
 	for y in size:

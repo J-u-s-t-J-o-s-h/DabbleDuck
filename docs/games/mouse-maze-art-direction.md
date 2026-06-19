@@ -27,10 +27,10 @@ educational mini-game quality direction, original art only).
 |-------|------|--------|---------|
 | Grass floor tile | `environment/grass_floor.png` | Generated for DabbleDuck (same as React maze) | CC0 / project-owned |
 | Hedge wall tile | `environment/hedge_wall.png` | Generated for DabbleDuck | CC0 / project-owned |
-| Mouse character | `characters/mouse.png` | Generated for DabbleDuck | CC0 / project-owned |
-| Cheese goal | `characters/cheese.png` | Generated for DabbleDuck | CC0 / project-owned |
-| Flower deco | `environment/deco_flower.png` | Generated for DabbleDuck | CC0 / project-owned |
-| Mushroom deco | `environment/deco_mushroom.png` | Generated for DabbleDuck | CC0 / project-owned |
+| Mouse character | `characters/mouse.png` | Kenney Tiny Creatures (tile_0178) | CC0 |
+| Cheese goal | `characters/cheese.png` | Kenney Food Expansion (tile_0058) | CC0 |
+| Floor / walls | `environment/dungeon_tilemap.png` | Kenney Tiny Dungeon atlas | CC0 |
+| Decorations | `environment/deco_*.png` | Kenney Tiny Creatures | CC0 |
 | UI / SFX | synthesized in `scripts/game_audio.gd` | Procedural (no external files) | MIT / project-owned |
 
 **Do not** ship Nintendo, Disney, PBS, or LeapFrog copyrighted assets. Kenney

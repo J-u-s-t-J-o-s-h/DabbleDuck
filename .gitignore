@@ -32,7 +32,8 @@ node_modules/.vite/
 # Vertical-slice verification scratch
 .verify-tmp/
 
-# Godot (engine cache + export output)
+# Download staging area for Kenney CC0 packs (not shipped in builds)
+tools/_kenney_download/
 .godot/
 games/**/.godot/
 games/**/export/

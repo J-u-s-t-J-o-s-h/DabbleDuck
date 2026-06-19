@@ -18,4 +18,4 @@ DabbleSDK="*res://autoloads/dabble_sdk.gd"
 window/size/viewport_width=960
 window/size/viewport_height=640
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/stretch/aspect="expand"
