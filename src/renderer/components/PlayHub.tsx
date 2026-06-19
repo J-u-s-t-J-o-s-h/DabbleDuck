@@ -83,7 +83,9 @@ export default function PlayHub({
             <p className="activity-page__desc">
               {result.ok
                 ? 'Your progress was saved.'
-                : `We had trouble: ${result.error ?? 'unknown error'}`}
+                : result.error?.includes('Godot')
+                  ? 'Godot is needed for that game. See docs/godot-development.md, then try again.'
+                  : 'Something went wrong. Please try again or pick another game.'}
             </p>
           </div>
         </header>

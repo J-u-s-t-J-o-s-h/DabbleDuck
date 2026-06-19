@@ -11,13 +11,9 @@
 import { spawnSync } from 'node:child_process'
 import { promises as fs, existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { findGodotBin } from './godot-resolve.mjs'
 
-const GODOT =
-  process.env.DABBLE_GODOT_BIN ||
-  ['/opt/homebrew/bin/godot', '/usr/local/bin/godot', '/usr/bin/godot'].find(
-    existsSync
-  ) ||
-  'godot'
+const GODOT = findGodotBin()
 
 const projectDir = join(process.cwd(), 'games', 'mouse-maze')
 const sessionDir = join(process.cwd(), '.verify-tmp', 'godot-verify')
@@ -29,6 +25,13 @@ function check(label, condition) {
 }
 
 async function main() {
+  if (!GODOT) {
+    console.error(
+      'Godot not found. Install with: winget install GodotEngine.GodotEngine\n' +
+        'Or set DABBLE_GODOT_BIN to your Godot.exe path.'
+    )
+    process.exit(1)
+  }
   console.log(`Godot: ${GODOT}`)
   console.log(`Project: ${projectDir}\n`)
 

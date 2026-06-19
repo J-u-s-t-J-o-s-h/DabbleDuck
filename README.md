@@ -77,6 +77,10 @@ today (with Zorin OS / Ubuntu support planned for the future).
 
 - [Node.js](https://nodejs.org/) 18+ (built and tested with Node 22+)
 - npm 9+
+- **Optional — Godot game development:** [Godot 4.7](https://godotengine.org/) for
+  building standalone games in `games/`. On Windows:
+  `winget install GodotEngine.GodotEngine`. Full guide:
+  [docs/godot-development.md](docs/godot-development.md).
 
 ### Install dependencies
 
@@ -108,6 +112,17 @@ npm run build:win  # build + package a Windows installer via electron-builder
 ```
 
 The packaged installer is written to the `release/` directory.
+
+### Godot games (optional)
+
+```bash
+npm run godot:path    # show detected Godot executable
+npm run godot:open    # open games/mouse-maze in the Godot editor
+npm run verify:godot  # headless contract test (no GUI)
+```
+
+In DabbleDuck: **Play → Mouse Maze (Godot)** launches the Godot project; **Mouse
+Maze** is the built-in React version. See [docs/godot-development.md](docs/godot-development.md).
 
 ---
 

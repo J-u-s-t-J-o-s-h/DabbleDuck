@@ -13,7 +13,9 @@
     "build:win": "electron-vite build && electron-builder --win",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
     "verify:slice": "tsx tools/verify-slice.ts",
-    "verify:godot": "node tools/verify-godot.mjs"
+    "verify:godot": "node tools/verify-godot.mjs",
+    "godot:path": "node tools/godot-path.mjs",
+    "godot:open": "node tools/godot-open.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

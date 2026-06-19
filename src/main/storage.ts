@@ -33,32 +33,38 @@ function filePath(name: string): string {
 
 /**
  * Read a JSON file, falling back to (and persisting) a default value
- * when the file does not exist yet or is corrupted.
+ * when the file does not exist yet, is empty, or contains invalid JSON.
  */
 async function readJson<T>(name: string, fallback: T): Promise<T> {
   const path = filePath(name)
   try {
     const raw = await fs.readFile(path, 'utf-8')
+    if (!raw.trim()) {
+      console.warn(`[storage] ${name} is empty; re-seeding defaults`)
+      await writeJson(name, fallback)
+      return fallback
+    }
     return JSON.parse(raw) as T
   } catch (err: unknown) {
     const code = (err as NodeJS.ErrnoException)?.code
     if (code === 'ENOENT') {
-      // First launch for this file: seed the default and return it.
       await writeJson(name, fallback)
       return fallback
     }
-    // Corrupted JSON or other read error: keep the user running with
-    // defaults rather than crashing the app.
-    console.error(`[storage] Failed to read ${name}, using fallback:`, err)
-    return fallback
   }
+  // Corrupted JSON or other read error: heal the file and keep running.
+  console.warn(`[storage] ${name} is unreadable; re-seeding defaults`)
+  await writeJson(name, fallback)
+  return fallback
 }
 
-/** Write a JSON file, creating the data directory if needed. */
+/** Write a JSON file atomically so interrupted writes cannot truncate it. */
 async function writeJson<T>(name: string, value: T): Promise<T> {
   const path = filePath(name)
+  const tmpPath = `${path}.tmp`
   await fs.mkdir(dataDir(), { recursive: true })
-  await fs.writeFile(path, JSON.stringify(value, null, 2), 'utf-8')
+  await fs.writeFile(tmpPath, JSON.stringify(value, null, 2), 'utf-8')
+  await fs.rename(tmpPath, path)
   return value
 }
 

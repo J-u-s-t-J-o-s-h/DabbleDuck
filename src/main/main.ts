@@ -18,7 +18,7 @@ import {
   parseResult,
   sessionPaths
 } from './gameSession'
-import { launchProcess, resolveSpawnSpec } from './gameLauncher'
+import { launchProcess, resolveSpawnSpec, validateGameLaunch } from './gameLauncher'
 import { reconcile } from './gameReconciler'
 import { ensureProgress } from '../renderer/services/progressService'
 import type { GameManifest, SettingsSnapshot } from '../shared/gameContract'
@@ -194,6 +194,11 @@ async function launchGame(
     return fail(`Invalid manifest for ${req.gameId}: ${String(err)}`)
   }
 
+  const launchCheck = validateGameLaunch(manifest, gameDir)
+  if (!launchCheck.ok) {
+    return fail(launchCheck.error)
+  }
+
   const usage = await getUsage()
   const baseChild = ensureProgress(progressData, profile.id)
 
@@ -275,6 +280,18 @@ app.whenReady().then(async () => {
   ipcMain.handle('game:launch', (_e, req: GameLaunchRequest) =>
     launchGame(req)
   )
+  ipcMain.handle('game:canLaunch', async (_e, gameId: string) => {
+    const gameDir = await findGameDir(gameId)
+    if (!gameDir) return { ok: false, error: `Game not found: ${gameId}` }
+    try {
+      const manifest = JSON.parse(
+        await fs.readFile(join(gameDir, 'game.json'), 'utf-8')
+      ) as GameManifest
+      return validateGameLaunch(manifest, gameDir)
+    } catch (err) {
+      return { ok: false, error: `Invalid manifest: ${String(err)}` }
+    }
+  })
 
   // --- Kiosk / safety handlers ------------------------------------------
   ipcMain.handle('kiosk:set', (_e, enabled: boolean) => {

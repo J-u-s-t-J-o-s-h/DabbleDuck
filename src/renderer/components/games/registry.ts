@@ -35,15 +35,15 @@ export interface ExternalGameDef {
 }
 
 /**
- * Standalone games launched as separate executables (the Phase 2+ platform
- * architecture). The launcher discovers the real manifest by `id`; this list
- * only drives what the child sees in the library.
+ * Standalone games launched as separate executables (Godot dev projects or
+ * exported native builds). The launcher discovers the manifest by `id`; this
+ * list drives what appears in the Play library.
  */
 export const EXTERNAL_GAMES: ExternalGameDef[] = [
   {
     id: 'mouse-maze-godot',
-    title: 'Mouse Maze',
-    icon: '🐭',
-    description: 'A real Godot maze adventure — find the cheese!'
+    title: 'Mouse Maze (Godot)',
+    icon: '🎮',
+    description: 'The Godot 4 version — edit in the engine, play from DabbleDuck!'
   }
 ]
