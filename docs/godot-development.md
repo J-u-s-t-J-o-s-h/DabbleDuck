@@ -46,6 +46,7 @@ npm run godot:open
 Or open Godot Hub / Godot Editor and import `games/mouse-maze/project.godot`.
 
 The project targets **Godot 4.7** (see `config/features` in `project.godot`).
+Visual theme and asset licenses: [docs/games/mouse-maze-art-direction.md](../games/mouse-maze-art-direction.md).
 
 ## 3. Run from the Godot editor (standalone dev)
 
