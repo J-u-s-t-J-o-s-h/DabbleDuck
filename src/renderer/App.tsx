@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { ACTIVITIES, ACTIVITY_COMPLETION_TYPE, COMPLETION_VERBS } from './data/defaultData'
 import type {
   ActivityId,
+  GameLaunchResult,
   Profile,
   ProgressData,
   Settings,
@@ -288,6 +289,35 @@ export default function App(): JSX.Element {
     [persistProgress]
   )
 
+  /**
+   * Launch a standalone (out-of-process) game for the active child. The main
+   * process runs the game, reconciles its emitted events into progress, and
+   * returns the updated progress + any rewards so we can refresh and celebrate.
+   */
+  const handleLaunchExternalGame = useCallback(
+    async (gameId: string): Promise<GameLaunchResult> => {
+      const pid = activeProfileIdRef.current
+      if (!pid) {
+        return {
+          ok: false,
+          completedCleanly: false,
+          sessionId: '',
+          newlyEarned: [],
+          progress: progressRef.current,
+          error: 'No active profile'
+        }
+      }
+      const result = await window.dabble.launchGame({ gameId, profileId: pid })
+      if (result.ok) {
+        // The main process is the authoritative writer; adopt its result.
+        progressRef.current = result.progress
+        setProgressState(result.progress)
+      }
+      return result
+    },
+    []
+  )
+
   /** Read a game's persistent module state from the active child's progress. */
   const getGameModuleState = useCallback((gameId: string): unknown => {
     const pid = activeProfileIdRef.current
@@ -447,6 +477,7 @@ export default function App(): JSX.Element {
         onComplete={() => handleCompleteActivity('play')}
         getModuleState={getGameModuleState}
         saveModuleState={saveGameModuleState}
+        onLaunchExternalGame={handleLaunchExternalGame}
         onBack={handleBackToHome}
       />
     )

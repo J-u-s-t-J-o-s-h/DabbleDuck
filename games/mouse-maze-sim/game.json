@@ -1,0 +1,16 @@
+{
+  "id": "mouse-maze",
+  "title": "Mouse Maze",
+  "icon": "🐭",
+  "description": "Help the mouse find the cheese in the garden! (Godot preview)",
+  "version": "0.1.0",
+  "contractVersion": 1,
+  "section": "play",
+  "ageRange": [3, 9],
+  "runtime": "node",
+  "entry": "game.mjs",
+  "completionTypes": ["games"],
+  "declaredBadges": [
+    { "id": "maze-first-cheese", "label": "First Cheese!", "icon": "🧀" }
+  ]
+}

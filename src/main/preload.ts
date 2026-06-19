@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
   DabbleApi,
+  GameLaunchRequest,
   Profile,
   ProgressData,
   Settings,
@@ -22,7 +23,9 @@ const api: DabbleApi = {
   saveProgress: (progress: ProgressData) =>
     ipcRenderer.invoke('progress:save', progress),
   setKiosk: (enabled: boolean) => ipcRenderer.invoke('kiosk:set', enabled),
-  requestExit: (pin: string) => ipcRenderer.invoke('app:requestExit', pin)
+  requestExit: (pin: string) => ipcRenderer.invoke('app:requestExit', pin),
+  launchGame: (req: GameLaunchRequest) =>
+    ipcRenderer.invoke('game:launch', req)
 }
 
 contextBridge.exposeInMainWorld('dabble', api)

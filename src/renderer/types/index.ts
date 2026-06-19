@@ -151,6 +151,38 @@ export interface ChildProgress {
 /** Map of profileId -> long-term progress record. */
 export type ProgressData = Record<string, ChildProgress>
 
+// ===========================================================================
+// External (cross-process) game launch
+// ===========================================================================
+
+/** Request to launch a standalone game for a given child. */
+export interface GameLaunchRequest {
+  gameId: string
+  profileId: string
+}
+
+/** A reward newly earned during a game session (for celebration UI). */
+export interface GameRewardSummary {
+  id: string
+  kind: 'badge' | 'achievement'
+  label: string
+  icon: string
+}
+
+/** Result of launching, running, and reconciling a standalone game. */
+export interface GameLaunchResult {
+  ok: boolean
+  /** True if the game wrote a clean result.json (vs. crashed/partial). */
+  completedCleanly: boolean
+  sessionId: string
+  /** Rewards earned this session, to celebrate on return. */
+  newlyEarned: GameRewardSummary[]
+  /** The full, updated progress map after reconciliation. */
+  progress: ProgressData
+  /** Set when ok is false. */
+  error?: string
+}
+
 /** The shape of the API exposed to the renderer via the preload bridge. */
 export interface DabbleApi {
   getSettings: () => Promise<Settings>
@@ -163,6 +195,8 @@ export interface DabbleApi {
   saveProgress: (progress: ProgressData) => Promise<ProgressData>
   setKiosk: (enabled: boolean) => Promise<void>
   requestExit: (pin: string) => Promise<boolean>
+  /** Launch a standalone game, then reconcile its progress on exit. */
+  launchGame: (req: GameLaunchRequest) => Promise<GameLaunchResult>
 }
 
 declare global {

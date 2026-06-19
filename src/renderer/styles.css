@@ -1372,6 +1372,36 @@ h2 {
   margin-top: 0.5rem;
 }
 
+/* ---------- Standalone (external) games ---------- */
+.activity-card--external {
+  position: relative;
+}
+.activity-card--external::after {
+  content: 'Godot';
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(135deg, #6c5ce7, #4834d4);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  opacity: 0.9;
+}
+
+.play-hub--launching,
+.play-hub--celebrate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 860px) {
   .profile-row {

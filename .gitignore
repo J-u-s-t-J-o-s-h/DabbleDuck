@@ -28,3 +28,12 @@ Thumbs.db
 # Vite / cache
 .vite/
 node_modules/.vite/
+
+# Vertical-slice verification scratch
+.verify-tmp/
+
+# Godot (engine cache + export output)
+.godot/
+games/**/.godot/
+games/**/export/
+*.translation

@@ -1,0 +1,15 @@
+{
+  "id": "mouse-maze-godot",
+  "title": "Mouse Maze",
+  "icon": "🐭",
+  "description": "A real Godot maze adventure — guide the mouse to the cheese!",
+  "version": "0.1.0",
+  "contractVersion": 1,
+  "section": "play",
+  "ageRange": [3, 9],
+  "runtime": "godot",
+  "completionTypes": ["games"],
+  "declaredBadges": [
+    { "id": "maze-first-cheese", "label": "First Cheese!", "icon": "🧀" }
+  ]
+}

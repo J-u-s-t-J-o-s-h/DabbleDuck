@@ -83,6 +83,14 @@ export const PROGRESS_RULES: ProgressRule[] = [
     icon: '🔬',
     test: (p) => completed(p, 'educational') >= 5
   },
+  {
+    id: 'game-on',
+    kind: 'badge',
+    label: 'Game On!',
+    description: 'Finished your first game.',
+    icon: '🎮',
+    test: (p) => completed(p, 'games') >= 1
+  },
   // --- Achievements ------------------------------------------------------
   {
     id: 'first-steps',
@@ -123,6 +131,14 @@ export const PROGRESS_RULES: ProgressRule[] = [
     description: 'Completed 5 coding activities.',
     icon: '💻',
     test: (p) => completed(p, 'coding') >= 5
+  },
+  {
+    id: 'game-champion',
+    kind: 'achievement',
+    label: 'Game Champion',
+    description: 'Finished 5 games.',
+    icon: '🏆',
+    test: (p) => completed(p, 'games') >= 5
   },
   {
     id: 'three-day-streak',

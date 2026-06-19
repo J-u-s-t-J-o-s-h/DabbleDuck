@@ -12,5 +12,10 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node"]
   },
-  "include": ["src/main", "src/renderer/types", "electron.vite.config.ts"]
+  "include": [
+    "src/main",
+    "src/renderer/types",
+    "src/shared",
+    "electron.vite.config.ts"
+  ]
 }

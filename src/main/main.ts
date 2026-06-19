@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Menu, globalShortcut } from 'electron'
+import { promises as fs, existsSync } from 'fs'
 import { join } from 'path'
 import {
   getProfiles,
@@ -10,7 +11,20 @@ import {
   saveSettings,
   saveUsage
 } from './storage'
+import {
+  buildLaunchContext,
+  makeSessionId,
+  parseEvents,
+  parseResult,
+  sessionPaths
+} from './gameSession'
+import { launchProcess, resolveSpawnSpec } from './gameLauncher'
+import { reconcile } from './gameReconciler'
+import { ensureProgress } from '../renderer/services/progressService'
+import type { GameManifest, SettingsSnapshot } from '../shared/gameContract'
 import type {
+  GameLaunchRequest,
+  GameLaunchResult,
   Profile,
   ProgressData,
   Settings,
@@ -88,6 +102,158 @@ function applyKioskShortcuts(enabled: boolean): void {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Standalone game launch + reconciliation
+// ---------------------------------------------------------------------------
+
+/** Locate the games directory in dev (repo) or production (resources). */
+function resolveGamesRoot(): string {
+  const resourcesPath = (process as unknown as { resourcesPath?: string })
+    .resourcesPath
+  const candidates = [
+    join(app.getAppPath(), 'games'),
+    join(__dirname, '../../games'),
+    ...(resourcesPath ? [join(resourcesPath, 'games')] : [])
+  ]
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+  return candidates[0]
+}
+
+/** Find the game folder whose manifest declares the given game id. */
+async function findGameDir(gameId: string): Promise<string | null> {
+  const root = resolveGamesRoot()
+  let entries: string[] = []
+  try {
+    entries = await fs.readdir(root)
+  } catch {
+    return null
+  }
+  for (const entry of entries) {
+    const manifestPath = join(root, entry, 'game.json')
+    if (!existsSync(manifestPath)) continue
+    try {
+      const manifest = JSON.parse(
+        await fs.readFile(manifestPath, 'utf-8')
+      ) as GameManifest
+      if (manifest.id === gameId) return join(root, entry)
+    } catch {
+      // Skip an unreadable/invalid manifest.
+    }
+  }
+  return null
+}
+
+function todayStr(): string {
+  return new Date().toISOString().slice(0, 10)
+}
+
+/** Whole seconds of screen time remaining for a child today. */
+function remainingSecondsFor(
+  profile: Profile,
+  usage: UsageData
+): number {
+  const record = usage[profile.id]
+  const usedToday =
+    record && record.date === todayStr() ? record.secondsUsedToday : 0
+  return Math.max(0, profile.dailyLimitMinutes * 60 - usedToday)
+}
+
+/**
+ * Launch a standalone game for a child, wait for it to exit, then fold its
+ * emitted events into the child's canonical progress. The launcher is the
+ * single authoritative writer of progress.json.
+ */
+async function launchGame(
+  req: GameLaunchRequest
+): Promise<GameLaunchResult> {
+  const progressData = await getProgress()
+  const fail = (error: string): GameLaunchResult => ({
+    ok: false,
+    completedCleanly: false,
+    sessionId: '',
+    newlyEarned: [],
+    progress: progressData,
+    error
+  })
+
+  const profiles = await getProfiles()
+  const profile = profiles.find((p) => p.id === req.profileId)
+  if (!profile) return fail(`Unknown profile: ${req.profileId}`)
+
+  const gameDir = await findGameDir(req.gameId)
+  if (!gameDir) return fail(`Game not found: ${req.gameId}`)
+
+  let manifest: GameManifest
+  try {
+    manifest = JSON.parse(
+      await fs.readFile(join(gameDir, 'game.json'), 'utf-8')
+    ) as GameManifest
+  } catch (err) {
+    return fail(`Invalid manifest for ${req.gameId}: ${String(err)}`)
+  }
+
+  const usage = await getUsage()
+  const baseChild = ensureProgress(progressData, profile.id)
+
+  const sessionId = makeSessionId(profile.id, manifest.id)
+  const sessionDir = join(app.getPath('userData'), 'sessions', sessionId)
+  const paths = sessionPaths(sessionDir)
+
+  const settingsSnapshot: SettingsSnapshot = {
+    soundEnabled: true,
+    locale: 'en-US',
+    reducedMotion: false
+  }
+
+  const launch = buildLaunchContext({
+    sessionId,
+    manifest,
+    profile,
+    settings: settingsSnapshot,
+    remainingSeconds: remainingSecondsFor(profile, usage),
+    moduleState: baseChild.modules[manifest.id] ?? null
+  })
+
+  try {
+    await fs.mkdir(sessionDir, { recursive: true })
+    await fs.writeFile(paths.launch, JSON.stringify(launch, null, 2), 'utf-8')
+    // Create an empty event log so the game can append to it.
+    await fs.writeFile(paths.events, '', 'utf-8')
+
+    const spec = resolveSpawnSpec(manifest, gameDir, sessionDir)
+    const exit = await launchProcess(spec)
+
+    const rawEvents = await fs.readFile(paths.events, 'utf-8').catch(() => '')
+    const rawResult = await fs.readFile(paths.result, 'utf-8').catch(() => null)
+    const events = parseEvents(rawEvents)
+    const result = parseResult(rawResult)
+
+    const { progress: updatedChild, newlyEarned } = reconcile(
+      baseChild,
+      events,
+      manifest
+    )
+
+    const updatedProgress: ProgressData = {
+      ...progressData,
+      [profile.id]: updatedChild
+    }
+    await saveProgress(updatedProgress)
+
+    return {
+      ok: true,
+      completedCleanly: result?.completedCleanly === true && exit.code === 0,
+      sessionId,
+      newlyEarned,
+      progress: updatedProgress
+    }
+  } catch (err) {
+    return fail(`Failed to run game: ${String(err)}`)
+  }
+}
+
 app.whenReady().then(async () => {
   const settings = await getSettings()
 
@@ -103,6 +269,11 @@ app.whenReady().then(async () => {
   ipcMain.handle('progress:get', () => getProgress())
   ipcMain.handle('progress:save', (_e, value: ProgressData) =>
     saveProgress(value)
+  )
+
+  // --- Standalone game launch -------------------------------------------
+  ipcMain.handle('game:launch', (_e, req: GameLaunchRequest) =>
+    launchGame(req)
   )
 
   // --- Kiosk / safety handlers ------------------------------------------

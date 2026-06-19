@@ -11,7 +11,9 @@
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
     "build:win": "electron-vite build && electron-builder --win",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json",
+    "verify:slice": "tsx tools/verify-slice.ts",
+    "verify:godot": "node tools/verify-godot.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -25,6 +27,7 @@
     "electron": "^33.2.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "tsx": "^4.22.4",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
   },
@@ -37,8 +40,20 @@
     "files": [
       "out/**/*"
     ],
+    "extraResources": [
+      {
+        "from": "games",
+        "to": "games",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
     "win": {
       "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
     }
   }
 }

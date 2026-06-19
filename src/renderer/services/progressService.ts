@@ -55,18 +55,6 @@ function dayBefore(dateStr: string): string {
   return d.toISOString().slice(0, 10)
 }
 
-// --- Persistence -----------------------------------------------------------
-
-/** Load all progress records from local storage. */
-export function loadProgress(): Promise<ProgressData> {
-  return window.dabble.getProgress()
-}
-
-/** Persist all progress records to local storage. */
-export function saveProgress(data: ProgressData): Promise<ProgressData> {
-  return window.dabble.saveProgress(data)
-}
-
 // --- Defaults & migration --------------------------------------------------
 
 /** Create a fresh, empty progress record for a new child. */
