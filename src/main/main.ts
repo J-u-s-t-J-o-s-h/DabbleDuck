@@ -37,6 +37,35 @@ const DEV_SERVER_URL = process.env['ELECTRON_RENDERER_URL']
 let mainWindow: BrowserWindow | null = null
 let kioskEnabled = false
 
+const isMac = process.platform === 'darwin'
+
+/**
+ * Make the launcher fill the screen in a way that plays nicely with spawning
+ * separate game windows.
+ *
+ * On macOS, native fullscreen puts the window in its own "Space"; a windowed
+ * game (e.g. Godot) then forces a switch to the desktop Space, and when the
+ * game quits the child is left on the desktop. macOS "simple fullscreen" fills
+ * the screen while staying in the SAME Space, so focus returns to the launcher
+ * when the game exits. On Windows/Linux, normal fullscreen is fine.
+ */
+function applyImmersive(win: BrowserWindow): void {
+  if (kioskEnabled) {
+    // On macOS, exit simple fullscreen before entering native kiosk.
+    if (isMac && win.isSimpleFullScreen()) win.setSimpleFullScreen(false)
+    win.setKiosk(true)
+    return
+  }
+  // Not kiosk: ensure kiosk is cleared on EVERY platform (so toggling kiosk
+  // off actually leaves kiosk), then fill the screen.
+  if (win.isKiosk()) win.setKiosk(false)
+  if (isMac) {
+    if (!win.isSimpleFullScreen()) win.setSimpleFullScreen(true)
+  } else {
+    win.setFullScreen(true)
+  }
+}
+
 function createWindow(settings: Settings): void {
   kioskEnabled = settings.kioskMode
 
@@ -46,7 +75,9 @@ function createWindow(settings: Settings): void {
     show: false,
     autoHideMenuBar: true,
     backgroundColor: '#FFF7E0',
-    fullscreen: true,
+    // On macOS we apply "simple fullscreen" after show (see applyImmersive);
+    // native fullscreen would create a separate Space and break safe return.
+    fullscreen: !isMac,
     // In kiosk mode, lock the window down harder.
     kiosk: kioskEnabled,
     webPreferences: {
@@ -63,6 +94,7 @@ function createWindow(settings: Settings): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show()
+    if (mainWindow) applyImmersive(mainWindow)
   })
 
   // Block external navigation and new windows for safety.
@@ -230,6 +262,11 @@ async function launchGame(
     const spec = resolveSpawnSpec(manifest, gameDir, sessionDir)
     const exit = await launchProcess(spec)
 
+    // The game took over the foreground (its own OS window). When it exits we
+    // must pull DabbleDuck back to the front, otherwise the child lands on the
+    // desktop instead of returning to the launcher.
+    restoreLauncherFocus()
+
     const rawEvents = await fs.readFile(paths.events, 'utf-8').catch(() => '')
     const rawResult = await fs.readFile(paths.result, 'utf-8').catch(() => null)
     const events = parseEvents(rawEvents)
@@ -255,8 +292,25 @@ async function launchGame(
       progress: updatedProgress
     }
   } catch (err) {
+    restoreLauncherFocus()
     return fail(`Failed to run game: ${String(err)}`)
   }
+}
+
+/**
+ * Re-assert the launcher window as the foreground app. After a standalone game
+ * (its own OS window) exits, the OS would otherwise show whatever was behind it
+ * (the desktop), so we restore + focus DabbleDuck and steal focus on macOS.
+ */
+function restoreLauncherFocus(): void {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    applyImmersive(mainWindow)
+    mainWindow.focus()
+  }
+  // macOS: bring the whole app forward even though another app had focus.
+  app.focus({ steal: true })
 }
 
 app.whenReady().then(async () => {
@@ -296,10 +350,7 @@ app.whenReady().then(async () => {
   // --- Kiosk / safety handlers ------------------------------------------
   ipcMain.handle('kiosk:set', (_e, enabled: boolean) => {
     kioskEnabled = enabled
-    if (mainWindow) {
-      mainWindow.setKiosk(enabled)
-      mainWindow.setFullScreen(true)
-    }
+    if (mainWindow) applyImmersive(mainWindow)
     applyKioskShortcuts(enabled)
   })
 
