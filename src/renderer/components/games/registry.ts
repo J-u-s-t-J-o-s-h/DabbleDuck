@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react'
 import type { GameProps } from './types'
-import MazeGame from './MazeGame'
 
 /** Metadata + component for a single playable game. */
 export interface GameDef {
@@ -13,17 +12,10 @@ export interface GameDef {
 
 /**
  * The catalogue of in-process (React) games shown in the Play hub. These run
- * inside the launcher and are the Phase 1 proof-of-concept.
+ * inside the launcher. Currently empty — games ship as standalone Godot
+ * projects (see EXTERNAL_GAMES); this list remains for future in-app games.
  */
-export const GAMES: GameDef[] = [
-  {
-    id: 'maze',
-    title: 'Mouse Maze',
-    icon: '🐭',
-    description: 'Use the arrow keys to help the mouse find the cheese!',
-    component: MazeGame
-  }
-]
+export const GAMES: GameDef[] = []
 
 /** Metadata for a standalone (out-of-process) game launched by the platform. */
 export interface ExternalGameDef {
@@ -58,11 +50,5 @@ export const EXTERNAL_GAMES: ExternalGameDef[] = [
     title: 'Mouse Maze 3D',
     icon: '🌿',
     description: 'A cozy 3D garden maze — guide the mouse to the cheese!'
-  },
-  {
-    id: 'mouse-maze-godot',
-    title: 'Mouse Maze (2D Godot)',
-    icon: '🎮',
-    description: 'The 2D Godot prototype — kept for reference while 3D matures.'
   }
 ]

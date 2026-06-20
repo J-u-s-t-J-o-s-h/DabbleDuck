@@ -18,8 +18,8 @@
 
 ## 1. Why Godot 4 is the correct choice
 
-### 1.1 The problem with the current approach
-The current Mouse Maze is a `<canvas>`-rendered React component (`src/renderer/components/games/MazeGame.tsx`) running inside the same renderer process as the launcher UI. It works as a prototype, but it has structural ceilings:
+### 1.1 The problem with the original approach
+The first Mouse Maze prototype was a `<canvas>`-rendered React component running inside the same renderer process as the launcher UI (since removed in favor of standalone Godot games). It worked as a prototype, but it had structural ceilings:
 
 - **No real game engine services.** Sprite animation, particle systems, audio buses, physics, tilemaps, shaders, and a scene graph all have to be hand-rolled in canvas/JS. This is exactly the work an engine exists to remove.
 - **Performance + asset ceiling.** Rich 2.5D, lighting, parallax, and particles in raw canvas will fight the React render loop and the Chromium compositor.

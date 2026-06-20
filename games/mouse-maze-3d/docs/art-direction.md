@@ -50,4 +50,3 @@ assets are encouraged** when they improve quality; see
 - Manifest id: `mouse-maze-3d`
 - Verify: `npm run verify:godot`
 - Sync assets: `npm run assets:mouse-maze-3d`
-- Legacy 2D Godot prototype: `games/mouse-maze/`

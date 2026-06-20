@@ -35,7 +35,7 @@ If DabbleDuck cannot find Godot when launched from the IDE, set an explicit path
 
 Restart your terminal and DabbleDuck after setting this.
 
-## 2. Open the Mouse Maze project
+## 2. Open the Mouse Maze 3D project
 
 From the repo root:
 
@@ -43,10 +43,10 @@ From the repo root:
 npm run godot:open
 ```
 
-Or open Godot Hub / Godot Editor and import `games/mouse-maze/project.godot`.
+Or open Godot Hub / Godot Editor and import `games/mouse-maze-3d/project.godot`.
 
 The project targets **Godot 4.7** (see `config/features` in `project.godot`).
-Visual theme and asset licenses: [docs/games/mouse-maze-art-direction.md](../games/mouse-maze-art-direction.md).
+Visual theme and asset licenses: [games/mouse-maze-3d/docs/art-direction.md](../games/mouse-maze-3d/docs/art-direction.md).
 
 ## 3. Run from the Godot editor (standalone dev)
 
@@ -70,16 +70,13 @@ All checks should pass.
 
 1. `npm run dev`
 2. Select a child profile → **Play**
-3. Choose **Mouse Maze (Godot)** (not the built-in React maze)
+3. Choose a Godot game (e.g. **Mouse Maze 3D**, **Classic Snake**, **Slither Trail**)
 4. The Godot window opens; when you finish and close the game, progress is saved
-
-The built-in **Mouse Maze** (React) and **Mouse Maze (Godot)** are both listed so
-you can compare or develop in Godot while keeping the polished in-app version.
 
 ## 6. Create a new Godot game
 
 1. Create `games/my-game/` with `project.godot` and `game.json`
-2. Copy `games/mouse-maze/autoloads/dabble_sdk.gd` into your project autoload
+2. Copy `games/mouse-maze-3d/autoloads/dabble_sdk.gd` into your project autoload
 3. Set `runtime: "godot"` in `game.json` and a unique `id`
 4. Add an entry to `EXTERNAL_GAMES` in
    `src/renderer/components/games/registry.ts`
