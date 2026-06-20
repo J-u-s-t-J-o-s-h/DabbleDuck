@@ -1,0 +1,28 @@
+Slither Trail — Asset Credits
+=============================
+
+Visuals
+-------
+All in-game 3D art (the snake, collectibles, garden decorations, fences, trees,
+butterflies, fireflies) is generated procedurally in GDScript from simple meshes
+(spheres, boxes, cylinders). No external 3D model files are shipped. This keeps
+the download tiny and guarantees the game runs on the GL Compatibility renderer
+used for older Dell PCs and budget mini PCs.
+
+Audio
+-----
+- sparkle.ogg, win.ogg — Kenney "Interface Sounds" pack (CC0 / public domain).
+  Source: https://kenney.nl/assets/interface-sounds
+  License: see licenses/kenney-interface-sounds-license.txt
+- Background music, collection blip, gentle "oops", and bird chirps are
+  synthesized procedurally at runtime (see scripts/game_audio.gd). If a CC0 OGG
+  is present it is used; otherwise the procedural fallback plays, so the game
+  always has sound.
+
+Approved CC0 / open sources for future art drops (see docs/games/slither-trail-design.md):
+- Kenney            https://kenney.nl              (CC0)
+- Quaternius        https://quaternius.com         (CC0)
+- Poly Pizza        https://poly.pizza             (varied, attribute per model)
+- OpenGameArt       https://opengameart.org        (varied, attribute per asset)
+- Godot Asset Lib   https://godotengine.org/asset-library
+- itch.io free packs (varied, attribute per pack)

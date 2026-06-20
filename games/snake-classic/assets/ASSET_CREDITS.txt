@@ -1,0 +1,17 @@
+Classic Snake — Asset Credits
+=============================
+
+Visuals
+-------
+All 3D art (snake, apple, board, fence) is generated procedurally in GDScript
+from simple meshes. No external model files are shipped. Runs on the GL
+Compatibility renderer for older Dell PCs and budget mini PCs.
+
+Audio
+-----
+- sparkle.ogg, win.ogg — Kenney "Interface Sounds" pack (CC0 / public domain).
+  Source: https://kenney.nl/assets/interface-sounds
+  License: see licenses/kenney-interface-sounds-license.txt
+- Background music and the gentle "oops" are synthesized procedurally at runtime
+  (scripts/game_audio.gd), with the CC0 sparkle used as the "eat" sound. If a CC0
+  OGG is missing, a procedural fallback plays so there is always sound.

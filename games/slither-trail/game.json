@@ -1,0 +1,20 @@
+{
+  "id": "slither-trail",
+  "title": "Slither Trail",
+  "icon": "🐍",
+  "description": "Explore a cozy storybook garden with a friendly snake and learn through play!",
+  "version": "0.1.0",
+  "contractVersion": 1,
+  "section": "play",
+  "ageRange": [4, 7],
+  "runtime": "godot",
+  "completionTypes": ["games"],
+  "declaredBadges": [
+    { "id": "slither-snake-scout", "label": "Snake Scout", "icon": "🔎" },
+    { "id": "slither-garden-explorer", "label": "Garden Explorer", "icon": "🌻" },
+    { "id": "slither-color-collector", "label": "Color Collector", "icon": "🍏" },
+    { "id": "slither-counting-champion", "label": "Counting Champion", "icon": "🔢" },
+    { "id": "slither-shape-seeker", "label": "Shape Seeker", "icon": "🔵" },
+    { "id": "slither-letter-learner", "label": "Letter Learner", "icon": "🔤" }
+  ]
+}

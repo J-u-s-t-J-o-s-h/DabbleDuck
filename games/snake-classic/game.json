@@ -1,0 +1,17 @@
+{
+  "id": "snake-classic",
+  "title": "Classic Snake",
+  "icon": "🍎",
+  "description": "A simple, classic snake game — eat the apples and grow as long as you can!",
+  "version": "0.1.0",
+  "contractVersion": 1,
+  "section": "play",
+  "ageRange": [5, 10],
+  "runtime": "godot",
+  "completionTypes": ["games"],
+  "declaredBadges": [
+    { "id": "snake-first-apple", "label": "First Apple", "icon": "🍎" },
+    { "id": "snake-snacker", "label": "Snake Snacker", "icon": "🐍" },
+    { "id": "snake-star", "label": "Snake Star", "icon": "⭐" }
+  ]
+}

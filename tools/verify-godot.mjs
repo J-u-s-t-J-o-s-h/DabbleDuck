@@ -1,31 +1,46 @@
 // ===========================================================================
-// Verify the REAL Godot game speaks the DabbleDuck contract.
+// Verify a REAL Godot game speaks the DabbleDuck contract.
 //
 // Runs the actual Godot binary headlessly against a synthetic session folder
 // with --dabble-autowin, then asserts the game wrote the expected events +
 // result. This proves the GDScript DabbleSDK <-> launcher contract end to end
 // without needing GUI input.
 //
-// Run with:  npm run verify:godot
+// Run with:
+//   npm run verify:godot                 (defaults to mouse-maze-3d)
+//   npm run verify:godot:slither         (slither-trail)
+//   node tools/verify-godot.mjs --game <id>
+//   DABBLE_GODOT_GAME=<id> node tools/verify-godot.mjs
 // ===========================================================================
 import { spawnSync } from 'node:child_process'
-import { promises as fs, existsSync } from 'node:fs'
+import { promises as fs } from 'node:fs'
 import { join } from 'node:path'
 import { findGodotBin } from './godot-resolve.mjs'
 
 const GODOT = findGodotBin()
 
-const projectDir = join(
-  process.cwd(),
-  'games',
-  process.env.DABBLE_GODOT_GAME ?? 'mouse-maze-3d'
-)
+function argValue(flag) {
+  const i = process.argv.indexOf(flag)
+  return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null
+}
+
+const gameId = argValue('--game') ?? process.env.DABBLE_GODOT_GAME ?? 'mouse-maze-3d'
+const projectDir = join(process.cwd(), 'games', gameId)
 const sessionDir = join(process.cwd(), '.verify-tmp', 'godot-verify')
 
 let failures = 0
 function check(label, condition) {
   console.log(`  [${condition ? 'PASS' : 'FAIL'}] ${label}`)
   if (!condition) failures += 1
+}
+
+async function readManifest() {
+  try {
+    const raw = await fs.readFile(join(projectDir, 'game.json'), 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return { id: gameId, version: '0.1.0', declaredBadges: [] }
+  }
 }
 
 async function main() {
@@ -36,7 +51,12 @@ async function main() {
     )
     process.exit(1)
   }
+  const manifest = await readManifest()
+  const declaredBadgeIds = new Set(
+    (manifest.declaredBadges ?? []).map((b) => b.id)
+  )
   console.log(`Godot: ${GODOT}`)
+  console.log(`Game:  ${gameId} (v${manifest.version ?? '?'})`)
   console.log(`Project: ${projectDir}\n`)
 
   await fs.rm(sessionDir, { recursive: true, force: true })
@@ -45,7 +65,7 @@ async function main() {
   const launch = {
     contractVersion: 1,
     sessionId: 'godot-verify',
-    game: { id: 'mouse-maze-3d', version: '0.1.0' },
+    game: { id: manifest.id ?? gameId, version: manifest.version ?? '0.1.0' },
     profile: { id: 'addie', name: 'Addie', age: 6, color: '#FF8FB1', icon: '🦊' },
     settings: { soundEnabled: true, locale: 'en-US', reducedMotion: false },
     session: { remainingSeconds: 3600, startedAt: new Date().toISOString() },
@@ -104,15 +124,18 @@ async function main() {
     )
   )
   check(
-    'requested badge maze-first-cheese',
+    'requested a declared badge',
     events.some(
-      (e) => e.type === 'badge.request' && e.badge?.id === 'maze-first-cheese'
+      (e) =>
+        e.type === 'badge.request' &&
+        e.badge?.id &&
+        (declaredBadgeIds.size === 0 || declaredBadgeIds.has(e.badge.id))
     )
   )
   check(
-    'saved module.state with plays',
+    'saved module.state (object)',
     events.some(
-      (e) => e.type === 'module.state' && typeof e.state?.plays === 'number'
+      (e) => e.type === 'module.state' && e.state && typeof e.state === 'object'
     )
   )
   check('wrote result.json completedCleanly', result?.completedCleanly === true)

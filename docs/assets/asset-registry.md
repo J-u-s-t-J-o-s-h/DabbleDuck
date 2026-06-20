@@ -69,6 +69,49 @@ npm run assets:mouse-maze-3d
 
 ---
 
+## Slither Trail (`games/slither-trail/`)
+
+| Asset name | Source URL | Creator | License | Where used | Attribution |
+|------------|------------|---------|---------|------------|-------------|
+| `pluck_001.ogg` → `sparkle.ogg` | [Kenney Interface Sounds](https://kenney.nl/assets/interface-sounds) | Kenney | **CC0 1.0** | Collect sparkle / level-clear chime | Optional: [Kenney.nl](https://kenney.nl) |
+| `confirmation_004.ogg` → `win.ogg` | Same Kenney pack | Kenney | **CC0 1.0** | Celebration fanfare | Optional credit |
+
+License text: `games/slither-trail/assets/licenses/kenney-interface-sounds-license.txt`.
+
+### Procedural / engine (no external file)
+
+All 3D art is generated procedurally in GDScript from primitives (spheres, boxes,
+cylinders). No model files are shipped — this keeps the bundle tiny and guarantees
+the game renders on the **GL Compatibility** renderer used for older Dell PCs and
+budget mini PCs.
+
+| Asset | Source | License | Where used |
+|-------|--------|---------|------------|
+| Garden snake (head, eyes, tongue, trailing body) | GDScript primitives (`snake.gd`) | MIT / DabbleDuck | Player character with growing trail + idle/celebrate animation |
+| Collectibles (green/red apples, strawberries, circles, squares, letter tiles) | GDScript primitives + `Label3D` (`collectible.gd`) | MIT / DabbleDuck | Per-mode learning objectives |
+| Garden world (checkerboard lawn, fence, trees, bushes, flowers, mushrooms, pebbles) | GDScript primitives (`garden_world.gd`) | MIT / DabbleDuck | Themed environment for each level |
+| Butterflies / fireflies | GDScript primitives + animation (`garden_world.gd`) | MIT / DabbleDuck | Ambient life (fireflies at night) |
+| Flat material palette | `stylized_materials.gd` | MIT / DabbleDuck | Shared cozy colors |
+| Procedural sky | Godot `ProceduralSkyMaterial` | Engine | Per-theme background |
+| Confetti + collect particles | GDScript particles | MIT / DabbleDuck | Celebrations & pickups |
+| Background music | Procedural synth loop (`game_audio.gd`, `_music_stream`) | MIT / DabbleDuck | Gentle C-major pentatonic tune |
+| Collect blip, gentle "oops", bird chirps | Procedural synth (`game_audio.gd`) | MIT / DabbleDuck | Reward, encouragement, garden ambience |
+| Synth audio fallback | `game_audio.gd` | MIT / DabbleDuck | Used if sparkle/win OGG files are missing |
+
+### Approved sources for future art drops
+
+Kenney (CC0), Quaternius (CC0), Poly Pizza, OpenGameArt, Godot Asset Library, and
+free itch.io packs. Document and attribute each model here before shipping. See
+`docs/games/slither-trail-design.md` for the art roadmap.
+
+### Verify
+
+```bash
+npm run verify:godot:slither
+```
+
+---
+
 ## Adding new assets (checklist)
 
 1. Confirm source is CC0, MIT, or otherwise permits commercial use and redistribution in games.

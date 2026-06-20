@@ -41,6 +41,19 @@ export interface ExternalGameDef {
  */
 export const EXTERNAL_GAMES: ExternalGameDef[] = [
   {
+    id: 'snake-classic',
+    title: 'Classic Snake',
+    icon: '🍎',
+    description: 'A simple, classic snake game — eat the apples and grow!'
+  },
+  {
+    id: 'slither-trail',
+    title: 'Slither Trail',
+    icon: '🐍',
+    description:
+      'Explore a cozy storybook garden with a friendly snake and learn colors, counting, shapes, and letters!'
+  },
+  {
     id: 'mouse-maze-3d',
     title: 'Mouse Maze 3D',
     icon: '🌿',
