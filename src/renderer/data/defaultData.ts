@@ -8,6 +8,7 @@ import type {
   Settings,
   UsageData
 } from '../types'
+import { HUB_DEFAULT_PORT } from '../../shared/hubContract'
 
 /** The seven activity sections shown on the child home screen. */
 export const ACTIVITIES: Activity[] = [
@@ -70,7 +71,14 @@ function allActivitiesEnabled(): Record<ActivityId, boolean> {
 export const DEFAULT_SETTINGS: Settings = {
   parentPin: '1234',
   kioskMode: false,
-  allowedActivities: allActivitiesEnabled()
+  allowedActivities: allActivitiesEnabled(),
+  // The Hub is OPTIONAL and OFF by default: a fresh install is fully
+  // standalone and never contacts the network.
+  hub: {
+    enabled: false,
+    address: '',
+    port: HUB_DEFAULT_PORT
+  }
 }
 
 /** Sample profiles seeded on first launch. */

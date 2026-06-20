@@ -13,6 +13,7 @@ import type {
   Settings,
   UsageData
 } from '../renderer/types'
+import { HUB_DEFAULT_PORT } from '../shared/hubContract'
 
 // Local-first JSON storage. Everything lives in Electron's userData
 // directory, so each OS user gets an isolated DabbleDuck data folder.
@@ -68,8 +69,14 @@ async function writeJson<T>(name: string, value: T): Promise<T> {
   return value
 }
 
-export function getSettings(): Promise<Settings> {
-  return readJson<Settings>(SETTINGS_FILE, DEFAULT_SETTINGS)
+export async function getSettings(): Promise<Settings> {
+  const settings = await readJson<Settings>(SETTINGS_FILE, DEFAULT_SETTINGS)
+  // Back-fill the optional Hub block for installs created before it existed,
+  // so the rest of the app can rely on `settings.hub` being present.
+  if (!settings.hub) {
+    settings.hub = { enabled: false, address: '', port: HUB_DEFAULT_PORT }
+  }
+  return settings
 }
 
 export function saveSettings(settings: Settings): Promise<Settings> {

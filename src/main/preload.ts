@@ -25,7 +25,10 @@ const api: DabbleApi = {
   setKiosk: (enabled: boolean) => ipcRenderer.invoke('kiosk:set', enabled),
   requestExit: (pin: string) => ipcRenderer.invoke('app:requestExit', pin),
   launchGame: (req: GameLaunchRequest) =>
-    ipcRenderer.invoke('game:launch', req)
+    ipcRenderer.invoke('game:launch', req),
+  hubTest: () => ipcRenderer.invoke('hub:test'),
+  hubPair: (deviceName: string) => ipcRenderer.invoke('hub:pair', deviceName),
+  hubSync: () => ipcRenderer.invoke('hub:sync')
 }
 
 contextBridge.exposeInMainWorld('dabble', api)

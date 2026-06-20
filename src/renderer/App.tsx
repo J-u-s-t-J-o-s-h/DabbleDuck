@@ -3,6 +3,9 @@ import { ACTIVITIES, ACTIVITY_COMPLETION_TYPE, COMPLETION_VERBS } from './data/d
 import type {
   ActivityId,
   GameLaunchResult,
+  HubPairResult,
+  HubSyncResult,
+  HubTestResult,
   Profile,
   ProgressData,
   Settings,
@@ -409,6 +412,28 @@ export default function App(): JSX.Element {
     setActiveActivity(null)
   }, [])
 
+  // --- Optional Hub actions ---------------------------------------------
+  // Pair/sync mutate settings.json in the main process, so we refresh the
+  // local settings state afterwards to stay in sync.
+  const handleHubTest = useCallback((): Promise<HubTestResult> => {
+    return window.dabble.hubTest()
+  }, [])
+
+  const handleHubPair = useCallback(
+    async (deviceName: string): Promise<HubPairResult> => {
+      const result = await window.dabble.hubPair(deviceName)
+      setSettings(await window.dabble.getSettings())
+      return result
+    },
+    []
+  )
+
+  const handleHubSync = useCallback(async (): Promise<HubSyncResult> => {
+    const result = await window.dabble.hubSync()
+    setSettings(await window.dabble.getSettings())
+    return result
+  }, [])
+
   // --- Render ------------------------------------------------------------
   if (loading || !settings) {
     return (
@@ -445,6 +470,9 @@ export default function App(): JSX.Element {
         onResetToday={handleResetToday}
         onToggleKiosk={handleToggleKiosk}
         onReturnToChildMode={handleReturnToChildMode}
+        onHubTest={handleHubTest}
+        onHubPair={handleHubPair}
+        onHubSync={handleHubSync}
       />
     )
   }

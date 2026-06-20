@@ -20,6 +20,7 @@ import {
 } from './gameSession'
 import { launchProcess, resolveSpawnSpec, validateGameLaunch } from './gameLauncher'
 import { reconcile } from './gameReconciler'
+import { hubPair, hubSync, hubTest } from './hubClient'
 import { ensureProgress } from '../renderer/services/progressService'
 import type { GameManifest, SettingsSnapshot } from '../shared/gameContract'
 import type {
@@ -346,6 +347,13 @@ app.whenReady().then(async () => {
       return { ok: false, error: `Invalid manifest: ${String(err)}` }
     }
   })
+
+  // --- Optional Hub (LAN) handlers --------------------------------------
+  // All are failure-safe; the launcher works fully standalone if the Hub is
+  // disabled, unreachable, or unpaired.
+  ipcMain.handle('hub:test', () => hubTest())
+  ipcMain.handle('hub:pair', (_e, deviceName: string) => hubPair(deviceName))
+  ipcMain.handle('hub:sync', () => hubSync())
 
   // --- Kiosk / safety handlers ------------------------------------------
   ipcMain.handle('kiosk:set', (_e, enabled: boolean) => {

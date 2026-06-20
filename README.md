@@ -150,6 +150,30 @@ stored `settings.json` to re-seed defaults.
 
 ---
 
+## Family Hub (optional)
+
+DabbleDuck can **optionally** connect to a **DabbleDuck Hub** — a small server you
+run on one always-on machine on your home network (e.g. a parent's PC). The Hub
+backs up and shares profiles, progress, and creations across the family's
+devices, with **no cloud and no internet required**.
+
+The Hub is an **enhancement, never a requirement**: with it disabled (the
+default) or offline, DabbleDuck behaves exactly as a standalone local-first
+launcher.
+
+- Run the Hub: see [`hub/README.md`](hub/README.md).
+- Connect a launcher: **Parent Mode → Family Hub (optional)** → enable, enter the
+  Hub's IP/port, **Test connection**, **Pair device**, then **Sync now**.
+- Design + development: [docs/architecture/dabbleduck-hub-architecture.md](docs/architecture/dabbleduck-hub-architecture.md)
+  and [docs/hub-development.md](docs/hub-development.md).
+
+> Current status: **Phase 1 foundation** — the Hub service, storage, foundational
+> API, and launcher connection/sync settings. Family gallery, family timeline,
+> creation persistence, and incremental sync are planned next. Multiplayer is
+> intentionally out of scope.
+
+---
+
 ## Where data is stored
 
 DabbleDuck stores three JSON files in Electron's per-user `userData` directory:
@@ -272,7 +296,8 @@ direct `awardBadge` / `awardAchievement` / `setModuleState` hooks for future mod
 - Reading tracker
 - Educational games
 - Parent analytics
-- Multiple device sync
+- Multiple device sync (via the optional **Family Hub** — Phase 1 foundation shipped)
+- Family gallery & family timeline (Hub-backed)
 - Child achievements
 - Duck mascot animation
 

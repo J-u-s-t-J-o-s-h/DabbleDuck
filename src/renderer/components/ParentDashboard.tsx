@@ -2,12 +2,18 @@ import { useState } from 'react'
 import type {
   Activity,
   ActivityId,
+  HubClientSettings,
+  HubPairResult,
+  HubSyncResult,
+  HubTestResult,
   Profile,
   ProgressData,
   Settings,
   UsageData
 } from '../types'
+import { HUB_DEFAULT_PORT } from '../../shared/hubContract'
 import ParentProgressPanel from './ParentProgressPanel'
+import HubSettingsCard from './HubSettingsCard'
 
 interface ParentDashboardProps {
   settings: Settings
@@ -21,6 +27,15 @@ interface ParentDashboardProps {
   onResetToday: (profileId: string) => void
   onToggleKiosk: (enabled: boolean) => void
   onReturnToChildMode: () => void
+  onHubTest: () => Promise<HubTestResult>
+  onHubPair: (deviceName: string) => Promise<HubPairResult>
+  onHubSync: () => Promise<HubSyncResult>
+}
+
+const DEFAULT_HUB: HubClientSettings = {
+  enabled: false,
+  address: '',
+  port: HUB_DEFAULT_PORT
 }
 
 function usedMinutes(usage: UsageData, profileId: string): number {
@@ -39,7 +54,10 @@ export default function ParentDashboard({
   onGrantMoreTime,
   onResetToday,
   onToggleKiosk,
-  onReturnToChildMode
+  onReturnToChildMode,
+  onHubTest,
+  onHubPair,
+  onHubSync
 }: ParentDashboardProps): JSX.Element {
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
@@ -245,6 +263,14 @@ export default function ParentDashboard({
             />
           </label>
         </div>
+
+        <HubSettingsCard
+          hub={settings.hub ?? DEFAULT_HUB}
+          onSave={(hub) => onSaveSettings({ ...settings, hub })}
+          onTest={onHubTest}
+          onPair={onHubPair}
+          onSync={onHubSync}
+        />
       </section>
     </div>
   )
