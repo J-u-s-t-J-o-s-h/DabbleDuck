@@ -1,0 +1,15 @@
+{
+  "id": "mouse-maze-3d",
+  "title": "Mouse Maze 3D",
+  "icon": "🐭",
+  "description": "Guide the mouse through a cozy 3D garden maze to find the cheese!",
+  "version": "0.1.0",
+  "contractVersion": 1,
+  "section": "play",
+  "ageRange": [3, 9],
+  "runtime": "godot",
+  "completionTypes": ["games"],
+  "declaredBadges": [
+    { "id": "maze-first-cheese", "label": "First Cheese!", "icon": "🧀" }
+  ]
+}

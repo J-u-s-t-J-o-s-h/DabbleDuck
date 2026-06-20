@@ -15,7 +15,11 @@ import { findGodotBin } from './godot-resolve.mjs'
 
 const GODOT = findGodotBin()
 
-const projectDir = join(process.cwd(), 'games', 'mouse-maze')
+const projectDir = join(
+  process.cwd(),
+  'games',
+  process.env.DABBLE_GODOT_GAME ?? 'mouse-maze-3d'
+)
 const sessionDir = join(process.cwd(), '.verify-tmp', 'godot-verify')
 
 let failures = 0
@@ -41,7 +45,7 @@ async function main() {
   const launch = {
     contractVersion: 1,
     sessionId: 'godot-verify',
-    game: { id: 'mouse-maze-godot', version: '0.1.0' },
+    game: { id: 'mouse-maze-3d', version: '0.1.0' },
     profile: { id: 'addie', name: 'Addie', age: 6, color: '#FF8FB1', icon: '🦊' },
     settings: { soundEnabled: true, locale: 'en-US', reducedMotion: false },
     session: { remainingSeconds: 3600, startedAt: new Date().toISOString() },

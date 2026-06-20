@@ -41,9 +41,15 @@ export interface ExternalGameDef {
  */
 export const EXTERNAL_GAMES: ExternalGameDef[] = [
   {
+    id: 'mouse-maze-3d',
+    title: 'Mouse Maze 3D',
+    icon: '🌿',
+    description: 'A cozy 3D garden maze — guide the mouse to the cheese!'
+  },
+  {
     id: 'mouse-maze-godot',
-    title: 'Mouse Maze (Godot)',
+    title: 'Mouse Maze (2D Godot)',
     icon: '🎮',
-    description: 'The Godot 4 version — edit in the engine, play from DabbleDuck!'
+    description: 'The 2D Godot prototype — kept for reference while 3D matures.'
   }
 ]

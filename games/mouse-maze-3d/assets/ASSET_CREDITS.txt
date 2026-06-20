@@ -1,0 +1,14 @@
+Mouse Maze 3D — shipped asset credits
+=====================================
+
+See the canonical registry: docs/assets/asset-registry.md
+
+Imported CC0 files in this folder:
+  characters/cheese_singles.fbx   — Quaternius Food Pack
+  characters/mouse_chick.fbx      — Quaternius 5 Animals (interim player)
+  environment/mushroom.fbx        — Quaternius Food Pack
+  environment/bush_broccoli.fbx   — Quaternius Food Pack
+  audio/*.ogg                     — Kenney Interface Sounds
+  licenses/kenney-interface-sounds-license.txt
+
+Re-sync from staging: npm run assets:mouse-maze-3d

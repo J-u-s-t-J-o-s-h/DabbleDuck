@@ -14,7 +14,11 @@ if (!godot) {
   process.exit(1)
 }
 
-const project = join(process.cwd(), 'games', 'mouse-maze')
+const project = join(
+  process.cwd(),
+  'games',
+  process.env.DABBLE_GODOT_GAME ?? 'mouse-maze-3d'
+)
 console.log(`Opening ${project} with ${godot}`)
 const child = spawn(godot, ['--editor', '--path', project], {
   stdio: 'inherit',
