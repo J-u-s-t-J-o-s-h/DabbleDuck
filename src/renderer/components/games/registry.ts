@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { GameProps } from './types'
+import RobotBuilder from './RobotBuilder'
 
 /** Metadata + component for a single playable game. */
 export interface GameDef {
@@ -12,10 +13,18 @@ export interface GameDef {
 
 /**
  * The catalogue of in-process (React) games shown in the Play hub. These run
- * inside the launcher. Currently empty — games ship as standalone Godot
- * projects (see EXTERNAL_GAMES); this list remains for future in-app games.
+ * inside the launcher (no external runtime needed).
  */
-export const GAMES: GameDef[] = []
+export const GAMES: GameDef[] = [
+  {
+    id: 'robot-builder',
+    title: 'Robot Builder',
+    icon: '🤖',
+    description:
+      'Build your own robot, then walk it around the playground to collect bolts!',
+    component: RobotBuilder
+  }
+]
 
 /** Metadata for a standalone (out-of-process) game launched by the platform. */
 export interface ExternalGameDef {

@@ -1264,3 +1264,489 @@ h2 {
     text-align: center;
   }
 }
+
+/* ============================================================
+   Robot Builder (in-process game)
+   ============================================================ */
+.rb-screen {
+  gap: 1.2rem;
+}
+
+.rb-build {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(340px, 1.1fr) 1.5fr;
+  gap: 1.5rem;
+  min-height: 0;
+}
+
+.rb-stage {
+  background: linear-gradient(180deg, var(--blue-soft), #fff);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  overflow: hidden;
+}
+
+.rb-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  padding-right: 0.3rem;
+}
+
+.rb-picker__title {
+  font-size: 1.15rem;
+  margin: 0 0 0.5rem;
+  color: var(--ink);
+}
+
+.rb-picker__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.rb-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 70px;
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 3px solid transparent;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+  color: var(--ink);
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.rb-chip:hover {
+  transform: translateY(-2px);
+}
+
+.rb-chip--on {
+  border-color: var(--blue);
+  background: var(--yellow-soft);
+}
+
+.rb-chip__emoji {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.rb-chip__swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 4px rgba(0, 0, 0, 0.15);
+}
+
+.rb-chip__label {
+  font-size: 0.85rem;
+}
+
+.rb-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ---------- The robot figure (sized 50% larger) ---------- */
+.rb-robot {
+  --robot-body: #4da8da;
+  --robot-shade: #2f86b8;
+  position: relative;
+  width: 276px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.rb-robot__antenna {
+  font-size: 3.75rem;
+  line-height: 1;
+  margin-bottom: -12px;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+}
+
+.rb-robot__head {
+  width: 165px;
+  height: 135px;
+  border-radius: 36px;
+  background: var(--robot-body);
+  border-bottom: 12px solid var(--robot-shade);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 2;
+}
+
+.rb-robot__eyes {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.rb-robot__body {
+  position: relative;
+  width: 204px;
+  height: 165px;
+  margin-top: -9px;
+  border-radius: 42px;
+  background: var(--robot-body);
+  border-bottom: 16px solid var(--robot-shade);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+.rb-robot__tummy {
+  font-size: 4.5rem;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  width: 102px;
+  height: 102px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rb-robot__arm {
+  position: absolute;
+  top: 24px;
+  width: 33px;
+  height: 98px;
+  border-radius: 21px;
+  background: var(--robot-shade);
+  transform-origin: top center;
+}
+
+.rb-robot__arm--l {
+  left: -33px;
+}
+.rb-robot__arm--r {
+  right: -33px;
+}
+
+.rb-robot__hand {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.rb-robot__legs {
+  display: flex;
+  gap: 30px;
+  margin-top: -5px;
+}
+
+.rb-robot__leg {
+  position: relative;
+  width: 39px;
+  height: 56px;
+  border-radius: 0 0 20px 20px;
+  background: var(--robot-shade);
+  transform-origin: top center;
+}
+
+.rb-robot__foot {
+  position: absolute;
+  bottom: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3.2rem;
+  line-height: 1;
+}
+
+/* Walking animation: gentle bob + swinging arms/legs. */
+.rb-robot--walking {
+  animation: rb-bob 0.5s ease-in-out infinite;
+}
+.rb-robot--walking .rb-robot__arm--l,
+.rb-robot--walking .rb-robot__leg:first-child {
+  animation: rb-swing 0.5s ease-in-out infinite;
+}
+.rb-robot--walking .rb-robot__arm--r,
+.rb-robot--walking .rb-robot__leg:last-child {
+  animation: rb-swing 0.5s ease-in-out infinite reverse;
+}
+
+/* Fun one-shot action animations (build / win screens). */
+.rb-robot--pop {
+  animation: rb-pop 0.32s ease-out;
+}
+.rb-robot--jump {
+  animation: rb-jump 0.65s ease-in-out;
+}
+.rb-robot--spin {
+  animation: rb-spin 0.8s ease-in-out;
+}
+.rb-robot--dance {
+  animation: rb-dance 0.8s ease-in-out 2;
+}
+.rb-robot--dance .rb-robot__arm--l,
+.rb-robot--dance .rb-robot__leg:first-child {
+  animation: rb-swing 0.4s ease-in-out infinite;
+}
+.rb-robot--dance .rb-robot__arm--r,
+.rb-robot--dance .rb-robot__leg:last-child {
+  animation: rb-swing 0.4s ease-in-out infinite reverse;
+}
+.rb-robot--wave .rb-robot__arm--r {
+  transform-origin: top center;
+  animation: rb-wave 0.45s ease-in-out 2;
+}
+
+@keyframes rb-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes rb-swing {
+  0%,
+  100% {
+    transform: rotate(14deg);
+  }
+  50% {
+    transform: rotate(-14deg);
+  }
+}
+
+@keyframes rb-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes rb-jump {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  15% {
+    transform: translateY(6px) scaleY(0.9);
+  }
+  45% {
+    transform: translateY(-60px) scaleY(1.06);
+  }
+  75% {
+    transform: translateY(0) scaleY(1);
+  }
+  85% {
+    transform: translateY(4px) scaleY(0.94);
+  }
+}
+
+@keyframes rb-spin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(720deg);
+  }
+}
+
+@keyframes rb-dance {
+  0%,
+  100% {
+    transform: rotate(-7deg) translateY(0);
+  }
+  25% {
+    transform: rotate(7deg) translateY(-6px);
+  }
+  50% {
+    transform: rotate(-7deg) translateY(0);
+  }
+  75% {
+    transform: rotate(7deg) translateY(-6px);
+  }
+}
+
+@keyframes rb-wave {
+  0%,
+  100% {
+    transform: rotate(8deg);
+  }
+  50% {
+    transform: rotate(-55deg);
+  }
+}
+
+/* ---------- Build stage layout + action buttons ---------- */
+.rb-stage__robot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  perspective: 800px;
+}
+
+.rb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+.rb-action {
+  border: none;
+  border-radius: 999px;
+  background: var(--purple);
+  color: #fff;
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 0.6rem 1.2rem;
+  box-shadow: 0 5px 0 #7c5fe0;
+  transition: transform 0.1s ease;
+}
+.rb-action:hover {
+  transform: translateY(-2px);
+}
+.rb-action:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #7c5fe0;
+}
+
+/* ---------- Walk phase ---------- */
+.rb-screen--walk {
+  gap: 0.8rem;
+}
+
+.rb-walk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rb-bolt-count {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--card);
+  border-radius: 999px;
+  padding: 0.4rem 1.2rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.rb-field {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, #eaf7e4, var(--green-soft)),
+    var(--green-soft);
+  box-shadow: inset 0 0 0 6px rgba(107, 191, 89, 0.25), var(--shadow-sm);
+}
+
+.rb-bolt {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem;
+  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
+  animation: rb-bob 1.6s ease-in-out infinite;
+}
+
+.rb-walker {
+  position: absolute;
+  transform: translate(-50%, -75%) scale(0.62);
+  transform-origin: center bottom;
+  transition: left 0.05s linear, top 0.05s linear;
+  pointer-events: none;
+}
+
+.rb-walker .rb-robot {
+  width: 276px;
+}
+
+/* ---------- Walk D-pad ---------- */
+.rb-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(2, 64px);
+  gap: 8px;
+  align-self: center;
+}
+
+.rb-dpad__btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--blue);
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 800;
+  box-shadow: 0 5px 0 #2f86b8;
+  touch-action: none;
+  user-select: none;
+}
+
+.rb-dpad__btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #2f86b8;
+}
+
+.rb-dpad__btn--up {
+  grid-column: 2;
+  grid-row: 1;
+}
+.rb-dpad__btn--left {
+  grid-column: 1;
+  grid-row: 2;
+}
+.rb-dpad__btn--right {
+  grid-column: 3;
+  grid-row: 2;
+}
+.rb-dpad__btn--down {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+/* ---------- Win phase ---------- */
+.rb-screen--win {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.rb-win-robot {
+  perspective: 800px;
+}
+
+@media (max-width: 860px) {
+  .rb-build {
+    grid-template-columns: 1fr;
+  }
+}

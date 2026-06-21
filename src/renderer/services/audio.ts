@@ -119,6 +119,75 @@ class AudioManager {
     this.tone(150, 0.08, 'square', 0.05)
   }
 
+  /** A frequency-sliding tone, for whirs/boings/zaps. */
+  private glide(
+    f0: number,
+    f1: number,
+    dur: number,
+    type: Wave = 'sine',
+    vol = 0.18,
+    when = 0
+  ): void {
+    const ctx = this.ensure()
+    if (!ctx || !this.master) return
+    const t = ctx.currentTime + when
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = type
+    osc.frequency.setValueAtTime(f0, t)
+    osc.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur)
+    gain.gain.setValueAtTime(0.0001, t)
+    gain.gain.linearRampToValueAtTime(vol, t + 0.012)
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + dur)
+    osc.connect(gain)
+    gain.connect(this.master)
+    osc.start(t)
+    osc.stop(t + dur + 0.03)
+  }
+
+  /** A short blip when a robot part is swapped. */
+  pop(): void {
+    if (this.muted) return
+    this.tone(660, 0.07, 'triangle', 0.16)
+    this.tone(990, 0.08, 'sine', 0.1, 0.03)
+  }
+
+  /** A friendly robotic "beep-boop" for the wave action. */
+  beepBoop(): void {
+    if (this.muted) return
+    this.tone(720, 0.1, 'square', 0.12)
+    this.tone(480, 0.12, 'square', 0.12, 0.12)
+    this.tone(900, 0.1, 'square', 0.1, 0.26)
+  }
+
+  /** A springy boing for jumping. */
+  boing(): void {
+    if (this.muted) return
+    this.glide(220, 740, 0.18, 'sine', 0.2)
+    this.glide(740, 300, 0.22, 'sine', 0.16, 0.18)
+  }
+
+  /** A rising whir for spinning. */
+  whir(): void {
+    if (this.muted) return
+    this.glide(300, 1200, 0.5, 'sawtooth', 0.12)
+    this.tone(1300, 0.18, 'sine', 0.12, 0.5)
+  }
+
+  /** A bouncy little tune for dancing. */
+  dance(): void {
+    if (this.muted) return
+    const notes = [523.25, 659.25, 587.33, 783.99, 659.25, 880, 783.99, 1046.5]
+    notes.forEach((n, i) => this.tone(n, 0.18, 'triangle', 0.16, i * 0.16))
+  }
+
+  /** A sparkly twinkle. */
+  sparkle(): void {
+    if (this.muted) return
+    this.tone(1318.5, 0.18, 'sine', 0.12)
+    this.tone(1760, 0.22, 'sine', 0.1, 0.08)
+  }
+
   /** A happy ascending fanfare when the cheese is found. */
   win(): void {
     if (this.muted) return
