@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type {
+  DeviceSummary,
   HubClientSettings,
+  HubDevicesResult,
   HubPairResult,
   HubSyncResult,
   HubTestResult
 } from '../types'
+
+const FALLBACK_DEVICE_NAME = 'DabbleDuck Device'
+/** A device counts as "online" if it was last seen within this window. */
+const ONLINE_WINDOW_MS = 5 * 60 * 1000
 
 interface HubSettingsCardProps {
   hub: HubClientSettings
@@ -13,6 +19,14 @@ interface HubSettingsCardProps {
   onTest: () => Promise<HubTestResult>
   onPair: (deviceName: string) => Promise<HubPairResult>
   onSync: () => Promise<HubSyncResult>
+  onDevices: () => Promise<HubDevicesResult>
+  /** Suggested default device name (from the local machine hostname). */
+  onSuggestedName: () => Promise<string>
+}
+
+function deviceIsOnline(device: DeviceSummary): boolean {
+  if (!device.lastSeen) return false
+  return Date.now() - new Date(device.lastSeen).getTime() < ONLINE_WINDOW_MS
 }
 
 /**
@@ -24,17 +38,56 @@ export default function HubSettingsCard({
   onSave,
   onTest,
   onPair,
-  onSync
+  onSync,
+  onDevices,
+  onSuggestedName
 }: HubSettingsCardProps): JSX.Element {
-  const [deviceName, setDeviceName] = useState('DabbleDuck Device')
+  const [deviceName, setDeviceName] = useState(FALLBACK_DEVICE_NAME)
+  const [nameEdited, setNameEdited] = useState(false)
   const [busy, setBusy] = useState<null | 'test' | 'pair' | 'sync'>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [devices, setDevices] = useState<DeviceSummary[] | null>(null)
+  const [devicesError, setDevicesError] = useState<string | null>(null)
+  const [loadingDevices, setLoadingDevices] = useState(false)
 
   const paired = Boolean(hub.deviceId && hub.deviceToken)
 
   const update = (patch: Partial<HubClientSettings>): void => {
     onSave({ ...hub, ...patch })
   }
+
+  // Auto-populate a suggested device name from the machine hostname, unless the
+  // parent has already typed one or this device is already paired.
+  useEffect(() => {
+    if (nameEdited || paired) return
+    let cancelled = false
+    onSuggestedName()
+      .then((suggested) => {
+        if (!cancelled && suggested && !nameEdited) setDeviceName(suggested)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [onSuggestedName, nameEdited, paired])
+
+  const loadDevices = useCallback(async (): Promise<void> => {
+    setLoadingDevices(true)
+    setDevicesError(null)
+    const res = await onDevices()
+    setLoadingDevices(false)
+    if (res.ok) {
+      setDevices(res.devices ?? [])
+    } else {
+      setDevices(null)
+      setDevicesError(res.error ?? 'Could not load devices.')
+    }
+  }, [onDevices])
+
+  // Load the connected-devices list once the device is paired.
+  useEffect(() => {
+    if (hub.enabled && paired) void loadDevices()
+  }, [hub.enabled, paired, loadDevices])
 
   const handleTest = async (): Promise<void> => {
     setBusy('test')
@@ -51,11 +104,12 @@ export default function HubSettingsCard({
   const handlePair = async (): Promise<void> => {
     setBusy('pair')
     setMessage(null)
-    const res = await onPair(deviceName.trim() || 'DabbleDuck Device')
+    const res = await onPair(deviceName.trim() || FALLBACK_DEVICE_NAME)
     setBusy(null)
     setMessage(
       res.ok ? 'Device paired with the Hub.' : `Pairing failed: ${res.error}`
     )
+    if (res.ok) void loadDevices()
   }
 
   const handleSync = async (): Promise<void> => {
@@ -68,6 +122,7 @@ export default function HubSettingsCard({
         ? `Sync complete: ${res.pushedProfiles} up, ${res.pulledProfiles} down.`
         : `Sync failed: ${res.error}`
     )
+    if (res.ok) void loadDevices()
   }
 
   return (
@@ -123,8 +178,12 @@ export default function HubSettingsCard({
         <input
           type="text"
           value={deviceName}
+          placeholder="e.g. Addie's MacBook"
           disabled={!hub.enabled || paired}
-          onChange={(e) => setDeviceName(e.target.value)}
+          onChange={(e) => {
+            setNameEdited(true)
+            setDeviceName(e.target.value)
+          }}
         />
       </label>
 
@@ -163,6 +222,59 @@ export default function HubSettingsCard({
           ? ` · ${new Date(hub.lastSyncAt).toLocaleString()}`
           : ''}
       </p>
+
+      {hub.enabled && paired && (
+        <div className="hub-devices">
+          <div className="hub-devices__header">
+            <strong>Connected devices</strong>
+            <button
+              className="pill-button pill-button--ghost"
+              type="button"
+              disabled={loadingDevices}
+              onClick={() => void loadDevices()}
+            >
+              {loadingDevices ? 'Refreshing…' : 'Refresh'}
+            </button>
+          </div>
+
+          {devicesError && <p className="pin-message">{devicesError}</p>}
+
+          {!devicesError && devices && devices.length === 0 && (
+            <p className="muted small">No devices paired yet.</p>
+          )}
+
+          {!devicesError && devices && devices.length > 0 && (
+            <ul className="hub-devices__list">
+              {devices.map((device) => {
+                const online = deviceIsOnline(device)
+                const isThisDevice = device.id === hub.deviceId
+                return (
+                  <li className="hub-devices__item" key={device.id}>
+                    <span
+                      className={`hub-devices__dot ${
+                        online ? 'hub-devices__dot--online' : ''
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span className="hub-devices__name">
+                      {device.name?.trim() || FALLBACK_DEVICE_NAME}
+                      {isThisDevice ? ' (this device)' : ''}
+                    </span>
+                    <span className="muted small">
+                      {online ? 'Online' : 'Offline'}
+                      {device.lastSeen
+                        ? ` · last sync ${new Date(
+                            device.lastSeen
+                          ).toLocaleString()}`
+                        : ' · never synced'}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   )
 }

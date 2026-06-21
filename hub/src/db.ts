@@ -192,6 +192,12 @@ export function touchDevice(db: HubDb, deviceId: string): void {
   )
 }
 
+export function listDevices(db: HubDb): DeviceRow[] {
+  return db
+    .prepare('SELECT * FROM devices ORDER BY paired_at ASC')
+    .all() as unknown as DeviceRow[]
+}
+
 // --- Profiles --------------------------------------------------------------
 
 export function upsertProfile(

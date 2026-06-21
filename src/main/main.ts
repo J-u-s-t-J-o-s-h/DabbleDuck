@@ -20,7 +20,8 @@ import {
 } from './gameSession'
 import { launchProcess, resolveSpawnSpec, validateGameLaunch } from './gameLauncher'
 import { reconcile } from './gameReconciler'
-import { hubPair, hubSync, hubTest } from './hubClient'
+import { hubDevices, hubPair, hubSync, hubTest } from './hubClient'
+import { hostname } from 'os'
 import { ensureProgress } from '../renderer/services/progressService'
 import type { GameManifest, SettingsSnapshot } from '../shared/gameContract'
 import type {
@@ -362,6 +363,16 @@ app.whenReady().then(async () => {
   ipcMain.handle('hub:test', () => hubTest())
   ipcMain.handle('hub:pair', (_e, deviceName: string) => hubPair(deviceName))
   ipcMain.handle('hub:sync', () => hubSync())
+  ipcMain.handle('hub:devices', () => hubDevices())
+  // Suggested device name from the local machine hostname (falls back to a
+  // generic label if the hostname is unavailable).
+  ipcMain.handle('hub:suggestedName', () => {
+    try {
+      return hostname() || 'DabbleDuck Device'
+    } catch {
+      return 'DabbleDuck Device'
+    }
+  })
 
   // --- Kiosk / safety handlers ------------------------------------------
   ipcMain.handle('kiosk:set', (_e, enabled: boolean) => {

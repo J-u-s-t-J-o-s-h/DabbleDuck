@@ -1,10 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import type {
+  DevicesResponse,
   HubErrorResponse,
   PairRequest,
   PairResponse
 } from '../../../src/shared/hubContract'
-import { appendChange, insertDevice } from '../db.ts'
+import { appendChange, insertDevice, listDevices } from '../db.ts'
+import { authenticateDevice } from './auth.ts'
 import { log } from '../log.ts'
 import type { HubContext } from '../types/index.ts'
 
@@ -40,6 +42,26 @@ export function registerDeviceRoutes(
         deviceToken: device.token,
         hubId: ctx.hubId
       }
+    }
+  )
+
+  // List paired devices for the family "Connected Devices" view. Token-gated,
+  // and deliberately never exposes device tokens.
+  app.get(
+    '/devices',
+    async (req, reply): Promise<DevicesResponse | HubErrorResponse> => {
+      const device = authenticateDevice(ctx, req)
+      if (!device) {
+        reply.code(401)
+        return { ok: false, error: 'Unpaired or invalid device token' }
+      }
+      const devices = listDevices(ctx.db).map((d) => ({
+        id: d.id,
+        name: d.name,
+        pairedAt: d.paired_at,
+        lastSeen: d.last_seen
+      }))
+      return { devices }
     }
   )
 }

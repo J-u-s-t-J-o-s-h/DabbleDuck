@@ -3,6 +3,7 @@ import { ACTIVITIES, ACTIVITY_COMPLETION_TYPE, COMPLETION_VERBS } from './data/d
 import type {
   ActivityId,
   GameLaunchResult,
+  HubDevicesResult,
   HubPairResult,
   HubSyncResult,
   HubTestResult,
@@ -434,6 +435,14 @@ export default function App(): JSX.Element {
     return result
   }, [])
 
+  const handleHubDevices = useCallback((): Promise<HubDevicesResult> => {
+    return window.dabble.hubDevices()
+  }, [])
+
+  const handleHubSuggestedName = useCallback((): Promise<string> => {
+    return window.dabble.hubSuggestedName()
+  }, [])
+
   // --- Render ------------------------------------------------------------
   if (loading || !settings) {
     return (
@@ -473,6 +482,8 @@ export default function App(): JSX.Element {
         onHubTest={handleHubTest}
         onHubPair={handleHubPair}
         onHubSync={handleHubSync}
+        onHubDevices={handleHubDevices}
+        onHubSuggestedName={handleHubSuggestedName}
       />
     )
   }

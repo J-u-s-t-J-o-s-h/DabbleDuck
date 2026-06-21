@@ -14,6 +14,9 @@ import type {
   Settings,
   UsageData
 } from '../../shared/dataModel'
+import type { DeviceSummary } from '../../shared/hubContract'
+
+export type { DeviceSummary } from '../../shared/hubContract'
 
 // ===========================================================================
 // External (cross-process) game launch
@@ -68,6 +71,13 @@ export interface HubPairResult {
   error?: string
 }
 
+/** Result of listing the devices paired with the Hub. */
+export interface HubDevicesResult {
+  ok: boolean
+  devices?: DeviceSummary[]
+  error?: string
+}
+
 /** Result of a manual push+pull sync with the Hub. */
 export interface HubSyncResult {
   ok: boolean
@@ -100,6 +110,10 @@ export interface DabbleApi {
   hubPair: (deviceName: string) => Promise<HubPairResult>
   /** Run a manual push+pull sync with the Hub. */
   hubSync: () => Promise<HubSyncResult>
+  /** List devices paired with the Hub (Connected Devices view). */
+  hubDevices: () => Promise<HubDevicesResult>
+  /** Suggested device name from the local machine hostname. */
+  hubSuggestedName: () => Promise<string>
 }
 
 declare global {

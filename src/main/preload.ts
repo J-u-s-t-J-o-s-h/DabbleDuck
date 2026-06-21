@@ -28,7 +28,9 @@ const api: DabbleApi = {
     ipcRenderer.invoke('game:launch', req),
   hubTest: () => ipcRenderer.invoke('hub:test'),
   hubPair: (deviceName: string) => ipcRenderer.invoke('hub:pair', deviceName),
-  hubSync: () => ipcRenderer.invoke('hub:sync')
+  hubSync: () => ipcRenderer.invoke('hub:sync'),
+  hubDevices: () => ipcRenderer.invoke('hub:devices'),
+  hubSuggestedName: () => ipcRenderer.invoke('hub:suggestedName')
 }
 
 contextBridge.exposeInMainWorld('dabble', api)

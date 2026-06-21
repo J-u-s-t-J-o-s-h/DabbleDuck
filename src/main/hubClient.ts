@@ -1,6 +1,7 @@
 import { getProfiles, getProgress, getSettings, saveSettings } from './storage'
 import {
   DEVICE_TOKEN_HEADER,
+  type DevicesResponse,
   type HubInfo,
   type PairResponse,
   type SyncPullResponse,
@@ -8,6 +9,7 @@ import {
 } from '../shared/hubContract'
 import type {
   HubClientSettings,
+  HubDevicesResult,
   HubPairResult,
   HubSyncResult,
   HubTestResult,
@@ -107,6 +109,30 @@ export async function hubPair(deviceName: string): Promise<HubPairResult> {
     }
     await saveSettings(nextSettings)
     return { ok: true, deviceId: res.deviceId }
+  } catch (err) {
+    return { ok: false, error: describeError(err) }
+  }
+}
+
+/** List the devices currently paired with the Hub (for the Connected Devices view). */
+export async function hubDevices(): Promise<HubDevicesResult> {
+  const settings = await getSettings()
+  const hub = activeHub(settings)
+  if (!hub) {
+    return { ok: false, error: 'Hub is disabled or no address is set.' }
+  }
+  if (!hub.deviceToken) {
+    return { ok: false, error: 'This device is not paired with the Hub yet.' }
+  }
+  try {
+    const res = await fetchJson<DevicesResponse>(
+      `${baseUrl(hub)}/devices`,
+      {
+        method: 'GET',
+        headers: { [DEVICE_TOKEN_HEADER]: hub.deviceToken }
+      }
+    )
+    return { ok: true, devices: res.devices }
   } catch (err) {
     return { ok: false, error: describeError(err) }
   }

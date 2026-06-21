@@ -3,6 +3,7 @@ import type {
   Activity,
   ActivityId,
   HubClientSettings,
+  HubDevicesResult,
   HubPairResult,
   HubSyncResult,
   HubTestResult,
@@ -30,6 +31,8 @@ interface ParentDashboardProps {
   onHubTest: () => Promise<HubTestResult>
   onHubPair: (deviceName: string) => Promise<HubPairResult>
   onHubSync: () => Promise<HubSyncResult>
+  onHubDevices: () => Promise<HubDevicesResult>
+  onHubSuggestedName: () => Promise<string>
 }
 
 const DEFAULT_HUB: HubClientSettings = {
@@ -57,7 +60,9 @@ export default function ParentDashboard({
   onReturnToChildMode,
   onHubTest,
   onHubPair,
-  onHubSync
+  onHubSync,
+  onHubDevices,
+  onHubSuggestedName
 }: ParentDashboardProps): JSX.Element {
   const [newPin, setNewPin] = useState('')
   const [confirmPin, setConfirmPin] = useState('')
@@ -270,6 +275,8 @@ export default function ParentDashboard({
           onTest={onHubTest}
           onPair={onHubPair}
           onSync={onHubSync}
+          onDevices={onHubDevices}
+          onSuggestedName={onHubSuggestedName}
         />
       </section>
     </div>

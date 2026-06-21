@@ -70,6 +70,25 @@ export interface PairResponse {
   hubId: string
 }
 
+// --- GET /devices (connected devices list) ---------------------------------
+
+/**
+ * Public-safe summary of a paired device. Deliberately omits the device token.
+ * `name` falls back to "DabbleDuck Device" in the UI when empty (older pairings).
+ */
+export interface DeviceSummary {
+  id: string
+  name: string
+  /** ISO timestamp the device first paired. */
+  pairedAt: string
+  /** ISO timestamp the device was last seen (last authenticated request), or null. */
+  lastSeen: string | null
+}
+
+export interface DevicesResponse {
+  devices: DeviceSummary[]
+}
+
 // --- Artifacts -------------------------------------------------------------
 
 /**
