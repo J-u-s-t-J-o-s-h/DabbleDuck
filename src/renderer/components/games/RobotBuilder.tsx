@@ -538,7 +538,7 @@ export default function RobotBuilder({
   // --- BUILD phase ------------------------------------------------------
   if (phase === 'build') {
     return (
-      <div className="screen rb-screen">
+      <div className="screen rb-screen rb-screen--build">
         <header className="activity-page__header">
           <span className="activity-page__icon" aria-hidden="true">
             🤖

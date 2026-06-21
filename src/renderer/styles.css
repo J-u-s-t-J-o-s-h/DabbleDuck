@@ -1272,6 +1272,24 @@ h2 {
   gap: 1.2rem;
 }
 
+/*
+ * Builder gets a slightly darker, calmer backdrop plus a large high-contrast
+ * cursor (inline SVG, so no asset file) so younger kids can easily track the
+ * pointer while choosing parts.
+ */
+.rb-screen--build {
+  background: linear-gradient(180deg, #c7d2e8, #aebfdc);
+}
+
+.rb-screen--build,
+.rb-screen--build button,
+.rb-screen--build .rb-chip {
+  cursor:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='46' height='58' viewBox='0 0 24 30'%3E%3Cpath d='M3 2 L3 24 L9 19 L12.5 28 L16 26.5 L12.5 18 L20 18 Z' fill='%2316203a' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E")
+      5 4,
+    auto;
+}
+
 .rb-build {
   flex: 1;
   display: grid;
