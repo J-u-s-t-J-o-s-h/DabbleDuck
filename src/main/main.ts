@@ -40,6 +40,14 @@ let kioskEnabled = false
 
 const isMac = process.platform === 'darwin'
 
+// Workaround for a Windows-only GPU process crash loop during Electron startup
+// (ANGLE/Direct3D11 swap-chain + DXGI "device removed" / EGL_CONTEXT_LOST,
+// GPU process exit_code=34) seen on some GPUs/drivers before the launcher is
+// usable. Disabling hardware acceleration forces software (SwiftShader)
+// rendering, which is fast enough for this UI and avoids the driver path
+// entirely. Must run at module load, before app `ready` and any BrowserWindow.
+app.disableHardwareAcceleration()
+
 /**
  * Make the launcher fill the screen in a way that plays nicely with spawning
  * separate game windows.
