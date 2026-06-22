@@ -15,6 +15,7 @@ import type {
 import { HUB_DEFAULT_PORT } from '../../shared/hubContract'
 import ParentProgressPanel from './ParentProgressPanel'
 import HubSettingsCard from './HubSettingsCard'
+import ProfileManagementPortal from './ProfileManagementPortal'
 
 interface ParentDashboardProps {
   settings: Settings
@@ -24,6 +25,7 @@ interface ParentDashboardProps {
   activities: Activity[]
   onSaveSettings: (settings: Settings) => void
   onSaveProfiles: (profiles: Profile[]) => void
+  onDeleteProfile: (profileId: string) => void
   onGrantMoreTime: (profileId: string) => void
   onResetToday: (profileId: string) => void
   onToggleKiosk: (enabled: boolean) => void
@@ -54,6 +56,7 @@ export default function ParentDashboard({
   activities,
   onSaveSettings,
   onSaveProfiles,
+  onDeleteProfile,
   onGrantMoreTime,
   onResetToday,
   onToggleKiosk,
@@ -115,6 +118,12 @@ export default function ParentDashboard({
           Return to Kid Mode
         </button>
       </header>
+
+      <ProfileManagementPortal
+        profiles={profiles}
+        onSaveProfiles={onSaveProfiles}
+        onDeleteProfile={onDeleteProfile}
+      />
 
       <section className="dashboard-section">
         <h2>Child Profiles &amp; Usage</h2>

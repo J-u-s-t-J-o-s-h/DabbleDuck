@@ -374,6 +374,32 @@ export default function App(): JSX.Element {
     window.dabble.saveProfiles(next)
   }, [])
 
+  /** Remove a child profile and purge their usage + progress on this device. */
+  const handleDeleteProfile = useCallback(
+    (profileId: string) => {
+      const nextProfiles = profiles.filter((p) => p.id !== profileId)
+      if (nextProfiles.length === profiles.length) return
+
+      setProfiles(nextProfiles)
+      window.dabble.saveProfiles(nextProfiles)
+
+      const nextUsage = { ...usageRef.current }
+      delete nextUsage[profileId]
+      persistUsage(nextUsage)
+
+      const nextProgress = { ...progressRef.current }
+      delete nextProgress[profileId]
+      persistProgress(nextProgress)
+
+      if (activeProfileIdRef.current === profileId) {
+        setActiveProfileId(null)
+        setActiveActivity(null)
+        setScreen('profileSelect')
+      }
+    },
+    [profiles, persistUsage, persistProgress]
+  )
+
   const handleGrantMoreTime = useCallback(
     (profileId: string) => {
       const today = todayStr()
@@ -475,6 +501,7 @@ export default function App(): JSX.Element {
         activities={ACTIVITIES}
         onSaveSettings={persistSettings}
         onSaveProfiles={handleSaveProfiles}
+        onDeleteProfile={handleDeleteProfile}
         onGrantMoreTime={handleGrantMoreTime}
         onResetToday={handleResetToday}
         onToggleKiosk={handleToggleKiosk}
